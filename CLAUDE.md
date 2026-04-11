@@ -24,3 +24,16 @@ This workspace is for automating repetitive tasks in an automotive engineering c
 - `file-automation/` — scripts for automating file operations
 - `reports/` — generated output and report files
 - `scripts/` — general-purpose utility scripts
+
+## Project Folder Naming Convention
+
+Major project folders use the prefix `P-` so they group together and are easy to distinguish from utility folders.
+
+- `P-TestLab/` — Siemens Testlab automation projects
+- `P-PowerPoint/` — PowerPoint report generation projects
+- `P-WebApps/` — web apps and interactive tools
+
+**Rules:**
+- Only create a `P-` folder when a new project actually starts — do not create empty folders in advance
+- Utility folders (`data-cleanup/`, `file-automation/`, `scripts/`, `reports/`) keep their existing names
+- `david-adventure` stays in the root folder since its link is already shared publicly

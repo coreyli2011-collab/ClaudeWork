@@ -32,7 +32,8 @@
       "Bash(pip show:*)",
       "Bash(pip install:*)",
       "Bash(python:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(mv TestLab:*)"
     ]
   }
 }
