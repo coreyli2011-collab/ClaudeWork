@@ -1,0 +1,12 @@
+PROJECT: Update Simcenter Testlab Run Selection automation from 2206 to 2406
+
+KEY FINDINGS:
+- Working file: LMS_Run_Selection_2206_-_Rev1.xlsm, it didn't work very well
+- The fix is likely just updating the TLB reference path
+- 2206 TLB path: C:\Users\lic\Documents\ClaudeWork\TestLab\LMSTestLabAutomation_2206.tlb
+- 2406 TLB path: C:\Users\lic\Documents\ClaudeWork\TestLab\LMSTestLabAutomation_2406.tlb
+- InputBasket API unchanged between versions
+- Both TLB files analyzed and confirmed compatible
+- Path for Ref file 1: C:\Users\lic\Documents\ClaudeWork\TestLab\2025 August - Simcenter Testlab Automation for Beginners.pdf
+- Path for Ref file 2: C:\Users\lic\Documents\ClaudeWork\TestLab\Automation Manual.pdf
+- Path for Ref file 3: C:\Users\lic\Documents\ClaudeWork\TestLab\Automation_Overview.pdf

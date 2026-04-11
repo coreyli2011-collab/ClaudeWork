@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(winget upgrade:*)",
+      "Bash(py -c ':*)",
+      "Read(//c/Program Files \\(x86\\)/Simcenter/**)",
+      "Read(//c/Program Files/Simcenter/**)",
+      "Bash(grep -i tlb find \"C:/Program Files \\(x86\\)/Simcenter/\" -name \"*.tlb\")",
+      "Bash(py -c \"import win32com.client; print\\('win32com available'\\)\")",
+      "Bash(py -c \"import xlwings; print\\('xlwings available'\\)\")",
+      "Bash(mv \"/c/Users/lic/Documents/ClaudeWork/TestLab/reference/\"* \"/c/Users/lic/Documents/ClaudeWork/TestLab/_reference/\")",
+      "Bash(mv \"/c/Users/lic/Documents/ClaudeWork/TestLab/working/\"* \"/c/Users/lic/Documents/ClaudeWork/TestLab/Run-Selection-Tool/working/\")",
+      "Bash(mv \"/c/Users/lic/Documents/ClaudeWork/TestLab/archive/\"* \"/c/Users/lic/Documents/ClaudeWork/TestLab/Run-Selection-Tool/archive/\")",
+      "Bash(unzip -o \"282084 Stellantis CUSW PV 2-Spd PTU P3255AE S5524 SN2 Post 100% BCW.pptx\" -d pptx_extract)",
+      "WebSearch",
+      "WebFetch(domain:community.sw.siemens.com)",
+      "WebFetch(domain:support.sw.siemens.com)",
+      "Bash(powershell -Command \"echo 'PowerShell available'\")",
+      "Bash(curl --version)",
+      "WebFetch(domain:github.com)",
+      "Bash(curl -s \"https://api.github.com/repos/oschwartz10612/poppler-windows/releases/latest\")",
+      "Bash(curl -L -o \"/c/Users/lic/AppData/Local/Temp/poppler.zip\" \"https://github.com/oschwartz10612/poppler-windows/releases/download/v25.12.0-0/Release-25.12.0-0.zip\")",
+      "Bash(mkdir -p \"/c/Users/lic/AppData/Local/poppler\")",
+      "Bash(unzip -o \"/c/Users/lic/AppData/Local/Temp/poppler.zip\" -d \"/c/Users/lic/AppData/Local/poppler\")",
+      "Read(//c/Users/lic/AppData/Local/**)",
+      "Bash(export PATH=\"/c/Users/lic/AppData/Local/poppler/poppler-25.12.0/Library/bin:$PATH\")",
+      "Bash(pdftoppm -v)",
+      "Bash(powershell:*)",
+      "Bash(chmod +x \"/usr/bin/pdftoppm\")",
+      "Bash(python -c \"import pypdf; print\\('pypdf available'\\)\")",
+      "Bash(python -c \"import PyPDF2; print\\('PyPDF2 available'\\)\")",
+      "Bash(pip show:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(git:*)"
+    ]
+  }
+}

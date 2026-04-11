@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>David's Great Adventure</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="David's Adventure">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+body{font-family:'Comic Sans MS','Chalkboard SE','Arial Rounded MT Bold',cursive;background:#1a0a2e;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden;}
+#game{width:100%;max-width:430px;height:100vh;position:relative;overflow:hidden;}
+
+/* scenes */
+.sc{display:none;width:100%;height:100%;position:absolute;top:0;left:0;flex-direction:column;align-items:center;justify-content:flex-start;}
+.sc.on{display:flex;}
+
+/* button reset — ALL tappable things are buttons */
+button{border:none;background:none;font-family:inherit;cursor:pointer;padding:0;display:block;-webkit-appearance:none;}
+button:active{opacity:.7;}
+
+/* ── stars ── */
+.star{position:absolute;pointer-events:none;animation:twinkle 2s infinite alternate;}
+@keyframes twinkle{from{opacity:.3;transform:scale(.8);}to{opacity:1;transform:scale(1.3);}}
+
+/* ── common ── */
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-18px);}}
+@keyframes bounce{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-8px) scale(1.06);}}
+@keyframes pop{from{transform:scale(0);}to{transform:scale(1);}}
+@keyframes pulse{from{transform:scale(1);}to{transform:scale(1.05);}}
+@keyframes wiggle{0%,100%{transform:translateX(0);}30%{transform:translateX(6px);}70%{transform:translateX(-6px);}}
+@keyframes twirl{from{transform:scale(0) rotate(0deg);}55%{transform:scale(1.6) rotate(190deg);}to{transform:scale(0) rotate(380deg) translateY(-65px);}}
+@keyframes rpl{to{transform:scale(4);opacity:0;}}
+@keyframes cf{from{transform:translateY(-40px) rotate(0deg);opacity:1;}to{transform:translateY(110vh) rotate(720deg);opacity:.2;}}
+
+.prog-bar{width:92%;height:13px;background:rgba(255,255,255,.25);border-radius:10px;margin:6px auto 0;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,#FFD700,#FF8C00);border-radius:10px;transition:width .5s;}
+.badge{font-size:15px;color:#FFD700;background:rgba(0,0,0,.5);border-radius:20px;padding:5px 14px;display:inline-block;}
+.hdr{width:100%;padding:14px 16px 8px;text-align:center;background:rgba(0,0,0,.25);}
+.instr{font-size:26px;padding:10px;margin:6px 10px 0;background:rgba(0,0,0,.3);border-radius:18px;}
+
+/* ── GREETING ── */
+#sg{background:linear-gradient(180deg,#0a0a3e,#2a0a5e 55%,#6B3A1F);}
+#sg .star-bg{position:absolute;width:100%;height:100%;pointer-events:none;}
+.greet-box{position:relative;z-index:10;text-align:center;padding:50px 20px 20px;width:100%;}
+.wave{font-size:90px;display:block;animation:float 2s ease-in-out infinite;transform-origin:70% 80%;}
+.greet-q{font-size:34px;color:#FFD700;text-shadow:3px 3px 8px rgba(0,0,0,.6);margin:14px 0 26px;line-height:1.2;}
+.greet-btns{display:flex;flex-direction:column;gap:16px;align-items:center;width:100%;}
+.gbtn{width:85%;padding:18px 20px;border-radius:30px;display:flex;align-items:center;justify-content:center;gap:14px;box-shadow:0 8px 22px rgba(0,0,0,.45);animation:bounce 1.8s ease-in-out infinite;font-family:inherit;font-weight:bold;cursor:pointer;}
+.gbtn:nth-child(2){animation-delay:.3s;}
+.gbtn:nth-child(3){animation-delay:.6s;}
+.gbtn .be{font-size:46px;line-height:1;}
+.gbtn .bn{font-size:32px;}
+.gbtn.emma{background:linear-gradient(135deg,#FF69B4,#C2185B);color:#fff;}
+.gbtn.ellis{background:linear-gradient(135deg,#42A5F5,#1565C0);color:#fff;}
+.gbtn.both{background:linear-gradient(135deg,#AB47BC,#6A1B9A);color:#fff;}
+#greet-resp{font-size:30px;color:#FFD700;text-shadow:2px 2px 6px rgba(0,0,0,.7);margin-top:18px;min-height:44px;animation:pop .4s cubic-bezier(.175,.885,.32,1.275);}
+
+/* ── TITLE ── */
+#s0{background:linear-gradient(180deg,#0a0a3e,#2a0a5e 50%,#6B3A1F);}
+#s0 .star-bg{position:absolute;width:100%;height:100%;pointer-events:none;}
+.title-box{position:relative;z-index:10;text-align:center;padding:50px 20px 20px;width:100%;}
+.main-title{font-size:46px;color:#FFD700;text-shadow:3px 3px 8px rgba(0,0,0,.6),0 0 25px #FFD700;line-height:1.15;margin-bottom:8px;animation:pulse 2.5s ease-in-out infinite alternate;}
+.for-names{font-size:22px;color:#FFB6C1;text-shadow:2px 2px 4px rgba(0,0,0,.5);margin-bottom:14px;}
+.hero{font-size:100px;display:block;margin:5px auto;animation:float 3s ease-in-out infinite;}
+.start-btn{background:linear-gradient(135deg,#FFD700,#FFA500);color:#4a1080;border-radius:50px;padding:20px 55px;font-size:30px;font-weight:bold;margin:22px auto 0;width:82%;box-shadow:0 8px 22px rgba(0,0,0,.45);animation:bounce 1.8s ease-in-out infinite;}
+
+/* ── S1 SHEPHERD ── */
+#s1{background:linear-gradient(180deg,#87CEEB 0%,#87CEEB 48%,#90EE90 48%,#2E8B22);}
+.counter{font-size:22px;color:#fff;background:rgba(0,0,0,.4);border-radius:18px;padding:7px 18px;margin:6px;}
+.play{flex:1;width:100%;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;}
+.sheep-btn{font-size:72px;margin:10px;animation:wiggle 3s ease-in-out infinite;background:none;border:none;cursor:pointer;padding:8px;}
+.sheep-btn:nth-child(2){animation-delay:.6s;}
+.sheep-btn:nth-child(3){animation-delay:1.2s;}
+.sheep-btn:nth-child(4){animation-delay:1.8s;}
+.sheep-btn:nth-child(5){animation-delay:2.4s;}
+.sheep-btn.gone{animation:pop-away .55s forwards !important;pointer-events:none;}
+@keyframes pop-away{0%{transform:scale(1);opacity:1;}50%{transform:scale(1.6) rotate(25deg);opacity:.8;}100%{transform:scale(0) rotate(60deg);opacity:0;}}
+.david-s{font-size:88px;animation:float 3s ease-in-out infinite;}
+
+/* ── S2 LION ── */
+#s2{background:linear-gradient(180deg,#E8740A,#FFD060 45%,#A0700A 65%,#5C3800);}
+.lion-img{font-size:130px;display:block;margin:20px auto;animation:lion-pace 2s ease-in-out infinite alternate;pointer-events:none;}
+@keyframes lion-pace{from{transform:scale(1) translateX(0);}to{transform:scale(1.12) translateX(12px);}}
+.lion-img.fled{animation:lion-run 1s forwards !important;}
+@keyframes lion-run{0%{transform:scale(1);opacity:1;}40%{transform:scale(.8) translateX(-80px);}100%{transform:scale(.2) translateX(-400px);opacity:0;}}
+.david-btn{font-size:90px;background:none;border:none;cursor:pointer;display:block;margin:10px auto;animation:float 2.5s ease-in-out infinite;}
+
+/* ── S3 CROWN ── */
+#s3{background:linear-gradient(180deg,#0a0a50,#3a0a70 55%,#7B3A10);}
+.brothers{display:flex;justify-content:center;gap:8px;margin:10px;font-size:46px;}
+.brother{opacity:.55;}
+.crown-btn{font-size:130px;background:none;border:none;cursor:pointer;display:block;margin:10px auto;animation:crown-float 2.2s ease-in-out infinite,crown-glow 1.8s ease-in-out infinite alternate;}
+@keyframes crown-float{0%,100%{transform:translateY(0) rotate(-6deg);}50%{transform:translateY(-22px) rotate(6deg);}}
+@keyframes crown-glow{from{filter:drop-shadow(0 0 10px #FFD700);}to{filter:drop-shadow(0 0 35px #FFD700) drop-shadow(0 0 70px #FFA500);}}
+
+/* ── S4 GOLIATH ── */
+#s4{background:linear-gradient(180deg,#8B0000,#C0622A 40%,#C0833A 65%,#7B4010);}
+.goliath-img{font-size:150px;display:block;margin:10px auto;animation:stomp 1s ease-in-out infinite;pointer-events:none;}
+@keyframes stomp{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+.goliath-img.fell{animation:fall-down 1.4s forwards !important;}
+@keyframes fall-down{0%{transform:scale(1) rotate(0);opacity:1;}35%{transform:scale(1.25) rotate(-12deg);}80%{transform:scale(.7) rotate(-55deg) translateY(60px);}100%{transform:scale(.3) rotate(-90deg) translateY(220px);opacity:0;}}
+.sling-btn{font-size:90px;background:none;border:none;cursor:pointer;display:block;margin:10px auto;animation:float 2.5s ease-in-out infinite;position:relative;}
+.stone{font-size:38px;position:absolute;top:0;right:-20px;opacity:0;pointer-events:none;}
+.stone.fly{opacity:1;animation:stone-fly .75s forwards;}
+@keyframes stone-fly{from{transform:translate(0,0) scale(1);opacity:1;}to{transform:translate(120px,-130px) scale(.4);opacity:0;}}
+
+/* ── S5 KING ── */
+#s5{background:linear-gradient(180deg,#FFD700,#FFA500 30%,#8B0000 62%,#3a0a70);}
+.cfwrap{position:absolute;width:100%;height:100%;pointer-events:none;top:0;left:0;z-index:1;}
+.cfetti{position:absolute;font-size:28px;animation:cf 3s linear infinite;}
+.king-area{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.king-btn{font-size:130px;background:none;border:none;cursor:pointer;display:block;animation:king-dance 1s ease-in-out infinite alternate;}
+@keyframes king-dance{from{transform:scale(1) rotate(-6deg);}to{transform:scale(1.12) rotate(6deg);}}
+.tap-hint{font-size:30px;background:rgba(0,0,0,.3);border-radius:16px;padding:8px 20px;}
+
+/* ── FINAL ── */
+#sf{background:linear-gradient(180deg,#FFD700,#FFA500 45%,#8B0000);}
+.final-box{text-align:center;padding:36px 20px;width:100%;}
+.final-title{font-size:42px;color:#fff;text-shadow:3px 3px 8px rgba(0,0,0,.6);margin-bottom:10px;}
+.final-msg{font-size:22px;color:#fff;text-shadow:2px 2px 4px rgba(0,0,0,.5);margin-bottom:12px;line-height:1.45;}
+.final-names{font-size:34px;color:#FFD700;text-shadow:2px 2px 5px rgba(0,0,0,.5);margin-bottom:14px;}
+.star-btn{font-size:80px;background:none;border:none;cursor:pointer;display:block;margin:0 auto;animation:float 2.5s ease-in-out .5s infinite;}
+.praise-bubble{font-size:24px;color:#fff;background:rgba(0,0,0,.35);border-radius:20px;padding:10px 22px;margin:8px auto;min-height:48px;max-width:90%;}
+.again-btn{background:linear-gradient(135deg,#FF6B6B,#CC0000);color:#fff;border-radius:50px;padding:18px 50px;font-size:26px;font-weight:bold;margin:14px auto 0;width:82%;box-shadow:0 8px 22px rgba(0,0,0,.45);animation:bounce 1.8s ease-in-out infinite;}
+
+/* ── OVERLAY ── */
+#overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.72);z-index:200;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;}
+#overlay.on{display:flex;}
+.ov-emoji{font-size:90px;animation:pop .45s cubic-bezier(.175,.885,.32,1.275),float 2s ease-in-out infinite .45s;}
+.ov-text{font-size:30px;color:#FFD700;text-shadow:3px 3px 7px rgba(0,0,0,.8);margin:16px 10px;line-height:1.35;}
+.next-btn{background:linear-gradient(135deg,#00C851,#007E33);color:#fff;border-radius:50px;padding:18px 48px;font-size:28px;font-weight:bold;margin-top:14px;width:80%;box-shadow:0 8px 22px rgba(0,0,0,.45);animation:bounce 1.8s ease-in-out infinite;}
+
+/* ── SPARKLE / RIPPLE ── */
+.sparkle{position:fixed;pointer-events:none;font-size:26px;animation:twirl .9s forwards;z-index:300;}
+.ripple{position:fixed;border-radius:50%;background:rgba(255,215,0,.35);transform:scale(0);animation:rpl .65s linear;pointer-events:none;z-index:999;width:70px;height:70px;}
+</style>
+</head>
+<body>
+<div id="game">
+
+<!-- ══ GREETING ══ -->
+<div id="sg" class="sc on">
+  <div class="star-bg" id="sbg2"></div>
+  <div class="greet-box">
+    <span class="wave">👋</span>
+    <div class="greet-q">Who is playing<br>today? 😊</div>
+    <div class="greet-btns">
+      <button class="gbtn emma" onclick="greet('Emma','👧',this)">
+        <span class="be">👧</span><span class="bn">Emma</span>
+      </button>
+      <button class="gbtn ellis" onclick="greet('Ellis','👦',this)">
+        <span class="be">👦</span><span class="bn">Ellis</span>
+      </button>
+      <button class="gbtn both" onclick="greet('Both','👧👦',this)">
+        <span class="be">👧👦</span><span class="bn">Both!</span>
+      </button>
+    </div>
+    <div id="greet-resp"></div>
+  </div>
+</div>
+
+<!-- ══ TITLE ══ -->
+<div id="s0" class="sc">
+  <div class="star-bg" id="sbg0"></div>
+  <div class="title-box">
+    <div class="badge">✨ A Bible Story ✨</div>
+    <div class="main-title">David's Great<br>Adventure!</div>
+    <div class="for-names">💕 For Emma &amp; Ellis 💕</div>
+    <span class="hero">🦸</span>
+    <button class="start-btn" onclick="startGame()">▶ Let's Go!</button>
+  </div>
+</div>
+
+<!-- ══ S1 SHEPHERD ══ -->
+<div id="s1" class="sc">
+  <div class="hdr">
+    <div class="badge">⭐ Scene 1 of 5 · The Shepherd Boy ⭐</div>
+    <div class="prog-bar"><div class="prog-fill" style="width:20%"></div></div>
+    <div class="instr">👆 🐑 🐑 🐑 🐑 🐑</div>
+    <div class="counter">Sheep: <span id="sc">0</span> / 5</div>
+  </div>
+  <div class="play" id="sheep-area">
+    <button class="sheep-btn" onclick="tapSheep(this)">🐑</button>
+    <button class="sheep-btn" onclick="tapSheep(this)">🐑</button>
+    <button class="sheep-btn" onclick="tapSheep(this)">🐑</button>
+    <button class="sheep-btn" onclick="tapSheep(this)">🐑</button>
+    <button class="sheep-btn" onclick="tapSheep(this)">🐑</button>
+  </div>
+  <div class="david-s">🧑‍🌾</div>
+</div>
+
+<!-- ══ S2 LION ══ -->
+<div id="s2" class="sc">
+  <div class="hdr">
+    <div class="badge">⭐ Scene 2 of 5 · The Lion ⭐</div>
+    <div class="prog-bar"><div class="prog-fill" style="width:40%"></div></div>
+    <div class="instr">🦁 😱 👆 🧑‍🌾</div>
+  </div>
+  <div class="play" style="flex-direction:column;gap:20px;align-items:center;">
+    <span class="lion-img" id="lion">🦁</span>
+    <button class="david-btn" onclick="scareLion()">🧑‍🌾</button>
+  </div>
+</div>
+
+<!-- ══ S3 CROWN ══ -->
+<div id="s3" class="sc">
+  <div class="hdr">
+    <div class="badge">⭐ Scene 3 of 5 · God's Choice ⭐</div>
+    <div class="prog-bar"><div class="prog-fill" style="width:60%"></div></div>
+    <div class="instr">✨ 👆 👑 ✨</div>
+  </div>
+  <div class="play" style="flex-direction:column;gap:18px;align-items:center;">
+    <div class="brothers">
+      <span class="brother">🧔</span>
+      <span class="brother">🧔</span>
+      <span style="font-size:46px;">👦</span>
+      <span class="brother">🧔</span>
+      <span class="brother">🧔</span>
+    </div>
+    <button class="crown-btn" id="crown-btn" onclick="chooseDavid()">👑</button>
+  </div>
+</div>
+
+<!-- ══ S4 GOLIATH ══ -->
+<div id="s4" class="sc">
+  <div class="hdr">
+    <div class="badge">⭐ Scene 4 of 5 · The Giant ⭐</div>
+    <div class="prog-bar"><div class="prog-fill" style="width:80%"></div></div>
+    <div class="instr">👆 🧒 🪨 💥 🗿</div>
+  </div>
+  <div class="play" style="flex-direction:column;gap:14px;align-items:center;">
+    <span class="goliath-img" id="goliath">🗿</span>
+    <button class="sling-btn" id="sling-btn" onclick="throwStone()">
+      🧒<span class="stone" id="stone">🪨</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══ S5 KING ══ -->
+<div id="s5" class="sc">
+  <div class="hdr">
+    <div class="badge">⭐ Scene 5 of 5 · The King! ⭐</div>
+    <div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div>
+    <div class="instr">🤴 👑 🎉 👆 🎉</div>
+  </div>
+  <div class="play" style="flex-direction:column;align-items:center;position:relative;">
+    <div class="cfwrap" id="cfwrap"></div>
+    <div class="king-area">
+      <button class="king-btn" id="king-btn" onclick="tapKing()">🤴</button>
+      <div style="font-size:52px;animation:float 2s ease-in-out infinite;">👑</div>
+      <div class="tap-hint" id="tap-hint">👆👆👆👆👆</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FINAL ══ -->
+<div id="sf" class="sc">
+  <div class="cfwrap" id="cf-final"></div>
+  <div class="final-box">
+    <div class="final-title">🎊 The End! 🎊</div>
+    <div class="final-msg">David trusted God with all his heart<br>and God made him a great King!</div>
+    <div style="font-size:58px;margin:12px 0;animation:float 2s ease-in-out infinite;">👑 🌟 🤴</div>
+    <div class="final-names" id="final-names">Great job,<br>Emma &amp; Ellis! 💕</div>
+    <button class="star-btn" onclick="tapPraise()">🌟</button>
+    <div class="praise-bubble" id="praise-bubble"></div>
+    <button class="again-btn" onclick="playAgain()">▶ Play Again!</button>
+  </div>
+</div>
+
+<!-- ══ OVERLAY ══ -->
+<div id="overlay">
+  <div id="ov-emoji" class="ov-emoji">⭐</div>
+  <div id="ov-text" class="ov-text">Well done!</div>
+  <button class="next-btn" id="next-btn" onclick="nextScene()">Next ▶</button>
+</div>
+
+</div><!-- #game -->
+
+<script>
+// ═══════════════════════════════
+//  AUDIO  (Web Audio API)
+// ═══════════════════════════════
+var AC = null;
+function getAC(){
+  if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended') AC.resume();
+  return AC;
+}
+function tone(freq,dur,type,vol,delay){
+  try{
+    var c=getAC(),o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);
+    o.type=type||'sine';
+    o.frequency.setValueAtTime(freq,c.currentTime+(delay||0));
+    g.gain.setValueAtTime(0,c.currentTime+(delay||0));
+    g.gain.linearRampToValueAtTime(vol||.25,c.currentTime+(delay||0)+.025);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+(delay||0)+dur);
+    o.start(c.currentTime+(delay||0));
+    o.stop(c.currentTime+(delay||0)+dur);
+  }catch(e){}
+}
+function noise(dur,vol,fStart,fEnd){
+  try{
+    var c=getAC(),sr=c.sampleRate,buf=c.createBuffer(1,sr*dur,sr),d=buf.getChannelData(0);
+    for(var i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
+    var src=c.createBufferSource();src.buffer=buf;
+    var flt=c.createBiquadFilter();flt.type='bandpass';
+    flt.frequency.setValueAtTime(fStart||2000,c.currentTime);
+    flt.frequency.exponentialRampToValueAtTime(fEnd||200,c.currentTime+dur);
+    var gn=c.createGain();gn.gain.setValueAtTime(vol||.35,c.currentTime);
+    gn.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);
+    src.connect(flt);flt.connect(gn);gn.connect(c.destination);
+    src.start();src.stop(c.currentTime+dur);
+  }catch(e){}
+}
+function sndBaa(){tone(280,.12,'sine',.2);tone(240,.28,'sine',.2,.12);tone(265,.18,'sine',.18,.4);}
+function sndCheer(){[523,659,784,1047].forEach(function(n,i){tone(n,.3,'sine',.2,i*.13);});}
+function sndRoar(){tone(80,.7,'sawtooth',.4);tone(105,.5,'sawtooth',.3,.12);tone(60,.5,'sine',.3,.35);}
+function sndTriumph(){[523,659,784,1047,784,1047,1319].forEach(function(n,i){tone(n,.22,'square',.18,i*.17);});}
+function sndHeavenly(){[523,659,784,988,1047,1319,1568].forEach(function(n,i){tone(n,.55,'sine',.13,i*.1);tone(n*2,.3,'sine',.05,i*.1);});}
+function sndWhoosh(){noise(.55,.4,2500,150);}
+function sndThud(){tone(55,.7,'sawtooth',.5);tone(38,.9,'sine',.4,.08);tone(45,.4,'sawtooth',.3,.35);}
+function sndDing(){tone(1047,.18,'sine',.3);tone(1319,.28,'sine',.22,.1);}
+function sndFanfare(){
+  [523,523,523,415,523,622,523,784,1047].forEach(function(n,i){if(n){tone(n,.28,'square',.2,i*.18);tone(n*.75,.25,'square',.12,i*.18);}});
+  [261,196,261,311,261].forEach(function(n,i){tone(n,.28,'sine',.18,i*.36);});
+}
+function sndCelebrate(){[523,659,784,1047,1319].forEach(function(n,i){tone(n,.38,'sine',.18,i*.1);tone(n*1.5,.28,'sine',.08,i*.1+.05);});}
+
+// ═══════════════════════════════
+//  VOICE
+// ═══════════════════════════════
+var NARRATION=[
+  '',
+  "David was a shepherd boy! Tap all the sheep to collect them!",
+  "Oh no! A fierce lion came! Tap David to be brave!",
+  "God chose David to be King! Tap the golden crown!",
+  "Goliath was a huge giant! Tap David to throw the stone!",
+  "David became King! Tap King David five times to celebrate!"
+];
+function speak(text,delay){
+  try{
+    setTimeout(function(){
+      window.speechSynthesis.cancel();
+      var u=new SpeechSynthesisUtterance(text);
+      u.rate=.88;u.pitch=1.12;u.volume=1;
+      var vs=window.speechSynthesis.getVoices();
+      var pick=vs.find(function(v){return /en/.test(v.lang)&&/Samantha|Karen|Victoria|Moira/.test(v.name);})||vs.find(function(v){return /en/.test(v.lang);});
+      if(pick) u.voice=pick;
+      window.speechSynthesis.speak(u);
+    },delay||0);
+  }catch(e){}
+}
+function speakScene(n){speak(NARRATION[n],500);}
+
+// ═══════════════════════════════
+//  STATE
+// ═══════════════════════════════
+var scene=0, sheepGot=0, kingTaps=0, busy=false, greeted=false;
+var playerName='Emma and Ellis', playerDisplay='Emma &amp; Ellis';
+var praiseIdx=0;
+var PRAISE=[
+  function(n){return 'Great job, '+n+'! You are a superstar!';},
+  function(n){return 'Wonderful, '+n+'! You finished the whole adventure!';},
+  function(n){return n+', you are so amazing! God loves you very much!';},
+  function(n){return 'You did it, '+n+'! David is so proud of you!';},
+  function(n){return 'Incredible, '+n+'! You are brave just like David!';},
+  function(n){return n+', you are a champion! Well done!';}
+];
+var CELEB=[
+  {e:'🌟',t:'Amazing!\nDavid kept all his sheep safe!'},
+  {e:'💪',t:'So brave!\nDavid chased the lion away!'},
+  {e:'✨',t:'God chose David!\nHe was very special!'},
+  {e:'⚡',t:'The giant fell!\nDavid trusted God!'}
+];
+
+// ═══════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════
+function show(id){
+  document.querySelectorAll('.sc').forEach(function(s){s.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+}
+
+function greet(name,emoji,btn){
+  if(greeted) return;
+  greeted=true;
+  document.querySelectorAll('.gbtn').forEach(function(b){b.disabled=true;});
+  btn.style.transform='scale(1.15)';
+  sndCheer();
+  sparkle(btn);
+  var isBoth=(name==='Both');
+  playerName=isBoth?'Emma and Ellis':name;
+  playerDisplay=isBoth?'Emma &amp; Ellis':name;
+  var msg=isBoth
+    ?"Hello Emma and Ellis! How wonderful that you are both here! Are you ready for David's Great Adventure? Let's go!"
+    :"Hello "+name+"! How wonderful! Are you ready for David's Great Adventure? Let's go!";
+  var disp=isBoth?'Hello Emma & Ellis! 🎉':'Hello '+name+'! 🎉';
+  document.getElementById('greet-resp').textContent=disp;
+  speak(msg,300);
+  setTimeout(function(){
+    show('s0');
+    greeted=false;
+    document.querySelectorAll('.gbtn').forEach(function(b){b.disabled=false;});
+    btn.style.transform='';
+    document.getElementById('greet-resp').textContent='';
+  },3200);
+}
+
+function startGame(){
+  sndCheer(); scene=1;
+  resetScene1(); show('s1'); speakScene(1);
+}
+
+function nextScene(){
+  document.getElementById('overlay').classList.remove('on');
+  busy=false; scene++;
+  if(scene===5){show('s5');initKing();}
+  else if(scene>5){showFinal();}
+  else{show('s'+scene);speakScene(scene);}
+}
+
+function showCeleb(data){
+  document.getElementById('ov-emoji').textContent=data.e;
+  document.getElementById('ov-text').textContent=data.t;
+  var nb=document.getElementById('next-btn');
+  nb.textContent=scene===5?'The End! 🎊':scene>=4?'One More! ▶':'Next ▶';
+  document.getElementById('overlay').classList.add('on');
+  sndCelebrate();
+  speak(data.t.replace(/\n/g,' '),600);
+}
+
+function showFinal(){
+  show('sf'); sndFanfare();
+  document.getElementById('final-names').innerHTML='Great job,<br>'+playerDisplay+'! 💕';
+  confetti(document.getElementById('cf-final'));
+  speak('Great job '+playerName+'! You finished David\'s Great Adventure! You are a superstar! David trusted God and became a great King!',800);
+  praiseIdx=0;
+  document.getElementById('praise-bubble').textContent='';
+}
+
+function playAgain(){
+  sndCheer(); scene=0; busy=false; greeted=false;
+  document.getElementById('overlay').classList.remove('on');
+  resetScene1();
+  document.getElementById('lion').classList.remove('fled');
+  document.getElementById('goliath').classList.remove('fell');
+  document.getElementById('stone').classList.remove('fly');
+  document.getElementById('crown-btn').disabled=false;
+  document.getElementById('sling-btn').disabled=false;
+  document.getElementById('king-btn').disabled=false;
+  kingTaps=0;
+  document.getElementById('tap-hint').textContent='👆👆👆👆👆';
+  document.getElementById('praise-bubble').textContent='';
+  show('sg');
+}
+
+// ═══════════════════════════════
+//  SCENE 1
+// ═══════════════════════════════
+function resetScene1(){
+  sheepGot=0;
+  document.getElementById('sc').textContent='0';
+  document.querySelectorAll('.sheep-btn').forEach(function(s){
+    s.classList.remove('gone'); s.disabled=false;
+  });
+}
+function tapSheep(el){
+  if(el.classList.contains('gone')||busy) return;
+  el.classList.add('gone'); el.disabled=true;
+  sndBaa(); sparkle(el);
+  sheepGot++;
+  document.getElementById('sc').textContent=sheepGot;
+  if(sheepGot>=5){busy=true;setTimeout(function(){showCeleb(CELEB[0]);},650);}
+}
+
+// ═══════════════════════════════
+//  SCENE 2
+// ═══════════════════════════════
+function scareLion(){
+  if(busy) return; busy=true;
+  sndRoar();
+  var lion=document.getElementById('lion');
+  setTimeout(function(){lion.classList.add('fled');sndTriumph();},420);
+  setTimeout(function(){
+    showCeleb(CELEB[1]);
+    setTimeout(function(){lion.classList.remove('fled');},200);
+  },1800);
+}
+
+// ═══════════════════════════════
+//  SCENE 3
+// ═══════════════════════════════
+function chooseDavid(){
+  if(busy) return; busy=true;
+  var cb=document.getElementById('crown-btn');
+  cb.disabled=true;
+  sndHeavenly(); sparkle(cb);
+  setTimeout(function(){
+    showCeleb(CELEB[2]);
+    cb.disabled=false;
+  },1600);
+}
+
+// ═══════════════════════════════
+//  SCENE 4
+// ═══════════════════════════════
+function throwStone(){
+  if(busy) return; busy=true;
+  var sb=document.getElementById('sling-btn');
+  var st=document.getElementById('stone');
+  var go=document.getElementById('goliath');
+  sb.disabled=true;
+  sndWhoosh();
+  st.classList.add('fly');
+  setTimeout(function(){go.classList.add('fell');sndThud();sparkle(go);},680);
+  setTimeout(function(){
+    showCeleb(CELEB[3]);
+    st.classList.remove('fly');
+    go.classList.remove('fell');
+    sb.disabled=false;
+  },2400);
+}
+
+// ═══════════════════════════════
+//  SCENE 5
+// ═══════════════════════════════
+function initKing(){
+  kingTaps=0;
+  document.getElementById('king-btn').disabled=false;
+  document.getElementById('tap-hint').textContent='👆👆👆👆👆';
+  confetti(document.getElementById('cfwrap'));
+  sndFanfare(); speakScene(5);
+}
+function tapKing(){
+  if(busy) return;
+  kingTaps++; sndDing();
+  sparkle(document.getElementById('king-btn'));
+  var left=5-kingTaps;
+  if(left>0){
+    document.getElementById('tap-hint').textContent='👆'.repeat(left);
+  } else {
+    busy=true;
+    document.getElementById('king-btn').disabled=true;
+    document.getElementById('tap-hint').textContent='🎊🎉🎊';
+    setTimeout(function(){
+      document.getElementById('next-btn').textContent='The End! 🎊';
+      scene=5;
+      showCeleb({e:'🤴',t:"David is King!\nGod's plan was perfect!"});
+    },500);
+  }
+}
+
+// ═══════════════════════════════
+//  FINAL PRAISE
+// ═══════════════════════════════
+function tapPraise(){
+  var line=PRAISE[praiseIdx%PRAISE.length](playerName);
+  praiseIdx++;
+  sndDing();
+  sparkle(document.getElementById('sf').querySelector('.star-btn'));
+  document.getElementById('praise-bubble').textContent=line;
+  speak(line,200);
+}
+
+// ═══════════════════════════════
+//  EFFECTS
+// ═══════════════════════════════
+function sparkle(el){
+  if(!el) return;
+  var r=el.getBoundingClientRect();
+  ['✨','⭐','💫','🌟','✨'].forEach(function(s,i){
+    var d=document.createElement('div');
+    d.className='sparkle'; d.textContent=s;
+    d.style.left=(r.left+Math.random()*r.width)+'px';
+    d.style.top=(r.top+Math.random()*r.height)+'px';
+    d.style.animationDelay=(i*.1)+'s';
+    document.body.appendChild(d);
+    setTimeout(function(){d.remove();},1000);
+  });
+}
+function confetti(container){
+  if(!container) return;
+  container.innerHTML='';
+  var emojis=['🌟','⭐','✨','🎉','🎊','💛','❤️','💜','💙','💚','🌈','🏆'];
+  for(var i=0;i<22;i++){
+    var p=document.createElement('div');
+    p.className='cfetti';
+    p.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.left=Math.random()*100+'%';
+    p.style.animationDelay=Math.random()*3+'s';
+    p.style.animationDuration=(2+Math.random()*2.5)+'s';
+    container.appendChild(p);
+  }
+}
+function makeStars(id,count){
+  var bg=document.getElementById(id);
+  if(!bg) return;
+  var chars=['⭐','✨','🌟','💫'];
+  for(var i=0;i<count;i++){
+    var s=document.createElement('div');
+    s.className='star'; s.textContent=chars[Math.floor(Math.random()*chars.length)];
+    s.style.left=Math.random()*90+'%';
+    s.style.top=Math.random()*85+'%';
+    s.style.fontSize=(14+Math.random()*20)+'px';
+    s.style.animationDelay=Math.random()*2.5+'s';
+    s.style.animationDuration=(1.5+Math.random()*2)+'s';
+    bg.appendChild(s);
+  }
+}
+
+// tap ripple
+document.addEventListener('touchstart',function(e){
+  var t=e.touches[0];
+  var r=document.createElement('div');
+  r.className='ripple';
+  r.style.left=(t.clientX-35)+'px';
+  r.style.top=(t.clientY-35)+'px';
+  document.body.appendChild(r);
+  setTimeout(function(){r.remove();},700);
+},{passive:true});
+
+// init
+makeStars('sbg0',18);
+makeStars('sbg2',16);
+</script>
+</body>
+</html>

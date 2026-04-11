@@ -1,0 +1,277 @@
+============================================================
+Module: Module1.bas
+============================================================
+Attribute VB_Name = "Module1"
+Sub RunSelection()
+Call UserForm1.Show
+End Sub
+
+
+============================================================
+Module: ThisWorkbook.cls
+============================================================
+Attribute VB_Name = "ThisWorkbook"
+Attribute VB_Base = "0{00020819-0000-0000-C000-000000000046}"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Attribute VB_TemplateDerived = False
+Attribute VB_Customizable = True
+
+
+============================================================
+Module: Sheet1.cls
+============================================================
+Attribute VB_Name = "Sheet1"
+Attribute VB_Base = "0{00020820-0000-0000-C000-000000000046}"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Attribute VB_TemplateDerived = False
+Attribute VB_Customizable = True
+
+
+============================================================
+Module: UserForm1.frm
+============================================================
+Attribute VB_Name = "UserForm1"
+Attribute VB_Base = "0{75172E9F-DF85-45B4-8200-4A18934819E7}{F6E13F11-878E-4D4C-B15D-D1BDEBB5657C}"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Attribute VB_TemplateDerived = False
+Attribute VB_Customizable = False
+Option Explicit
+
+Private hasLoaded As Boolean
+Private TL As LMSTestLabAutomation.Application
+Private DB As LMSTestLabAutomation.IDatabase
+Private ib As LMSTestLabAutomation.InputBasket
+Private runs, filteredRuns As Collection
+
+Private Function CNameToString(ByVal cdata As LMSTestLabAutomation.IData) As String
+    Dim content As String
+    If cdata Is Nothing Then
+      content = ""
+    Else
+      content = cdata.Item("Contents")
+      If content Is Nothing Then
+        content = ""
+      Else
+        Dim length As Long
+        length = Len(content)
+        content = Left(content, length - 1)
+        content = Right(content, length - 2)
+      End If
+    End If
+    CNameToString = content
+End Function
+
+Private Function PathToRunName(ByVal path As String) As String
+  On Error GoTo ErrLine
+  Dim run, delim As String
+  Dim index, length As Long
+  delim = "***!DELIMITER!***"
+  run = Replace(path, "\/", delim)
+  index = InStr(1, run, "/")
+  length = Len(run)
+  run = Right(run, length - index)
+  index = InStr(1, run, "/")
+  If Not index = 0 Then run = Left(run, index)
+  PathToRunName = Replace(run, delim, "\/")
+  Exit Function
+ErrLine:
+  PathToRunName = ""
+End Function
+
+Private Sub ButtonFilter_Click()
+  Set filteredRuns = New Collection
+  Dim chkbox As Variant
+  For Each chkbox In Frame1.Controls
+    If chkbox.Value Then Call filteredRuns.Add(chkbox.Caption)
+  Next
+  
+  If filteredRuns.Count = 0 Then
+    Call MsgBox("No runs are selected!", vbExclamation)
+    Exit Sub
+  End If
+  
+  Dim id As LMSTestLabAutomation.IData
+  Dim run, path As String
+  Dim paths As New Collection
+
+  Dim i As Integer
+  For i = 0 To ib.Count - 1
+    Set id = ib.Item(i, True)
+    path = id.Item("PathToTop")
+    run = PathToRunName(path)
+    If Not run = "" Then
+      If ListContains(filteredRuns, run) Then Call paths.Add(path)
+    End If
+  Next
+
+  Call ib.Clear
+  On Error Resume Next
+  For i = paths.Count To 1 Step -1
+    Call DB.AddToInputBasket(paths(i))
+  Next
+  
+  Call Frame1.Controls.Clear
+  Dim offset As Integer
+  offset = 6
+  For i = 1 To filteredRuns.Count
+    Set chkbox = Frame1.Controls.Add("Forms.CheckBox.1")
+    chkbox.Caption = filteredRuns(i)
+    chkbox.Left = 6
+    chkbox.Top = offset
+     '2 added lines
+    chkbox.Width = 510
+    chkbox.Font.Size = 14
+    offset = offset + 18
+  Next
+  Call RefreshCheckedRuns
+End Sub
+
+Private Sub ButtonRefresh_Click()
+  Set TL = New LMSTestLabAutomation.Application
+  If TL.Name = "" Then
+    Call MsgBox("This automation requires an open Testlab project.", vbCritical)
+    Call TL.Quit
+    Exit Sub
+  End If
+  
+  Set DB = TL.ActiveBook.Database
+
+  Dim exp As LMSTestLabAutomation.IExplorer
+  Set exp = TL.ActiveBook.FindDataWatch("Navigator_Explorer").Data
+  Set ib = exp.InputBasket
+  Set runs = New Collection
+
+  Dim id As LMSTestLabAutomation.IData
+  Dim run As String
+  Dim path As String
+  Dim i As Integer
+  
+  'For i = 0 To ib.Count - 1
+  'add new line to NOT sort
+  For i = ib.Count - 1 To 0 Step -1
+    Set id = ib.Item(i, True)
+    path = id.Item("PathToTop")
+    run = PathToRunName(path)
+    If Not run = "" Then
+      If Not ListContains(runs, run) Then Call runs.Add(run)
+    End If
+  Next
+
+  'Set runs = ListSort(runs)
+  
+  Call Frame1.Controls.Clear
+  Dim chkbox As Variant
+  Dim offset As Integer
+  offset = 6
+  For i = 1 To runs.Count
+    Set chkbox = Frame1.Controls.Add("Forms.CheckBox.1")
+    chkbox.Caption = runs(i)
+    chkbox.Left = 6
+    chkbox.Top = offset
+    '2 added lines
+    chkbox.Width = 510
+    chkbox.Font.Size = 14
+    offset = offset + 36
+  Next
+  hasLoaded = True
+  Call RefreshCheckedRuns
+End Sub
+
+Private Sub Frame1_Click()
+
+End Sub
+
+Private Sub TextBox1_Change()
+  If Not hasLoaded Then Exit Sub
+  Call RefreshCheckedRuns
+End Sub
+
+Private Sub TextBox2_Change()
+  If Not hasLoaded Then Exit Sub
+  Call RefreshCheckedRuns
+End Sub
+
+Private Sub RefreshCheckedRuns()
+  Dim i, iStart, iStep As Integer
+  Dim chkbox As Variant
+  For Each chkbox In Frame1.Controls
+    chkbox.Value = False
+  Next
+  
+  If IsNumeric(TextBox1.Text) Then iStart = Val(TextBox1.Text) Else iStart = 1
+  If IsNumeric(TextBox2.Text) Then iStep = Val(TextBox2.Text) Else iStep = 1
+  For i = iStart - 1 To Frame1.Controls.Count - 1 Step iStep
+    Frame1.Controls.Item(i).Value = True
+  Next
+End Sub
+
+Private Function ListContains(ByVal list As Collection, ByVal match As String) As Boolean
+  Dim found As Boolean
+  found = False
+  Dim i As Integer
+  For i = 1 To list.Count
+    If list.Item(i) = match Then
+      found = True
+      Exit For
+    End If
+  Next
+  ListContains = found
+End Function
+
+Private Function ListSort(ByVal list As Collection) As Collection
+  If list.Count = 0 Then
+    Set ListSort = list
+    Exit Function
+  End If
+  
+  Dim sorted As New Collection
+  Call sorted.Add(list(1))
+  
+  Dim this, that As String
+  Dim i, j As Integer
+  Dim placed As Boolean
+  For i = 2 To list.Count
+    this = list(i)
+    placed = False
+    For j = 1 To i - 1
+      that = sorted(j)
+      If StrComp(this, that, 1) = -1 Then
+        Call sorted.Add(this, before:=j)
+        placed = True
+        Exit For
+      End If
+      If Not placed Then Call sorted.Add(this)
+    Next
+  Next
+  Set ListSort = sorted
+End Function
+
+Private Sub UserForm_Click()
+
+End Sub
+Private Sub Frame1_Scroll(ByVal ActionX As fmScrollAction, ByVal ActionY As fmScrollAction, ByVal RequestDx As Single, ByVal RequestDy As Single, ByVal ActualDx As ReturnSingle, ByVal ActualDy As ReturnSingle)
+  Dim offset As Single
+  offset = 12
+  Dim chkbox As Variant
+  If RequestDy > 0 Then
+    For Each chkbox In Frame1.Controls
+      chkbox.Top = chkbox.Top - offset
+    Next
+  ElseIf RequestDy < 0 Then
+    For Each chkbox In Frame1.Controls
+      chkbox.Top = chkbox.Top + offset
+    Next
+  End If
+End Sub
+
+
+

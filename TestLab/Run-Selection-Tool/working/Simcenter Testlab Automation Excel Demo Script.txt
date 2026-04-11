@@ -1,0 +1,132 @@
+Dim Testlab As LMSTestLabAutomation.Application
+Dim Project As LMSTestLabAutomation.IDatabase
+
+Sub TLDemo()
+  ' Instantiate the connection
+  Set Testlab = New LMSTestLabAutomation.Application
+  If Testlab.Name = "" Then
+    ' If .Name = "", Testlab is not open yet; this opens a background process instead;
+    ' it can be brought to the foreground with .Init to specify a workbook.
+    Call Testlab.Init("-w DesktopStandard -b")
+  End If
+  If Testlab.Books.Count = 0 Then
+    ' If .Books.Count = 0, an empty Testlab application is open without a project.
+    Call Testlab.OpenProject("C:\Simcenter\Testlab Data\Demo.lms")
+  End If
+  
+  ' Load the database of the project.
+  ' This contains the sections, runs, blocks, etc.
+  Set Project = Testlab.ActiveBook.Database
+  
+  ' Display the project information
+  Cells(1, 1).Value2 = Testlab.Name
+  Cells(1, 2).Value2 = Testlab.ActiveBook.ActiveProjectWatch.Data
+  
+  ' Make a list of all block paths in the project
+  Cells(3, 1).Value2 = "Block Name:"
+  Cells(3, 2).Value2 = "Location:"
+  Dim currentRow As Integer
+  currentRow = 4
+  For Each section In Project.SectionNames
+    Call BrowseRecursively(section, currentRow)
+  Next
+  If currentRow = 4 Then
+    Cells(4, 1).Value2 = "No blocks found!"
+    Exit Sub
+  End If
+  
+  ' Get one of the blocks by using its path
+  Dim block As LMSTestLabAutomation.IBlock2
+  Dim blockName, blockFolder As String
+  blockName = Cells(4, 1).Value2
+  blockFolder = Cells(4, 2).Value2
+  Set block = Project.GetItem(blockFolder & "/" & blockName)
+  
+  ' Get the axis values
+  Dim xs, ysReal, ysComplex As Variant ' Arrays of Double
+  xs = block.XValues(0)
+  ysReal = block.RealYValues
+  ysComplex = block.YValues
+  
+  ' Get the first values (MKS units)
+  Dim x, yReal, yImag, yAmp, yPhase, yDB As Double
+  x = xs(0)
+  yReal = ysComplex(0, 0) ' or yReal = ysReal(0)
+  yImag = ysComplex(0, 1)
+  
+  ' Calculate amplitude and phase, if desired
+  yAmp = (yReal ^ 2 + yImag ^ 2) ^ 0.5
+  If yReal = 0 Then
+    If yReal < 0 Then yPhase = 3 * Pi / 2 Else yPhase = Pi / 2
+  Else
+    yPhase = Math.Atn(yImag / yReal)
+  End If
+  
+  ' Convert to the user unit system
+  x = Testlab.UnitSystem.MKSToUserValue(block.XQuantity, x)
+  yReal = Testlab.UnitSystem.MKSToUserValue(block.YQuantity, yReal)
+  yImag = Testlab.UnitSystem.MKSToUserValue(block.YQuantity, yImag)
+  yDB = Testlab.UnitSystem.ValueTodBValue(block.YQuantity, yAmp)
+  yPhase = Testlab.UnitSystem.MKSToUserValue(Testlab.UnitSystem.QuantityAngle, yPhase)
+    
+  ' Get some block properties
+  Dim props As LMSTestLabAutomation.AttributeMap
+  Dim weightEnum As LMSTestLabAutomation.Enumerate
+  Dim pointID As String
+  Set props = block.Properties
+  Set weightEnum = props.Item("Weighting")
+  pointID = props.Item("Point id")
+  
+  ' Display the first point's values
+  currentRow = currentRow + 1
+  Cells(currentRow, 1).Value2 = "Source Block:"
+  Cells(currentRow, 2).Value2 = block.Label
+  Cells(currentRow + 1, 1).Value2 = "Weight:"
+  Cells(currentRow + 1, 2).Value2 = weightEnum.LocalValue
+  Cells(currentRow + 2, 1).Value2 = "Point ID:"
+  Cells(currentRow + 2, 2).Value2 = pointID
+  Cells(currentRow + 3, 1).Value2 = "First X:"
+  Cells(currentRow + 3, 2).Value2 = x & " " & Testlab.UnitSystem.Label(block.XQuantity)
+  Cells(currentRow + 4, 1).Value2 = "First Y (real, imag):"
+  Cells(currentRow + 4, 2).Value2 = "(" & yReal & ", " & yImag & ") " & Testlab.UnitSystem.Label(block.YQuantity)
+  Cells(currentRow + 5, 1).Value2 = "First Y (dB, phase):"
+  Cells(currentRow + 5, 2).Value2 = "(" & yDB & ", " & yPhase & ")"
+    
+  ' Create modified block: y = y + 0.3
+  Dim newBlock As LMSTestLabAutomation.IBlock2
+  Dim newYs() As Double
+  ReDim newYs(UBound(ysReal))
+  Dim point_three As Double
+  point_three = Testlab.UnitSystem.UserToMKSValue(block.YQuantity, 0.3)
+  For i = 0 To UBound(ysReal)
+    newYs(i) = ysReal(i) + point_three
+  Next
+  Set newBlock = block.ReplaceYDoubleValues(newYs)
+  Call Project.AddItem(blockFolder, blockName & " (Modified)", newBlock, OverwriteIfExists:=1)
+  
+  currentRow = currentRow + 7
+  Cells(currentRow, 1).Value2 = "New Block:"
+  Cells(currentRow, 2).Value2 = "Location:"
+  Cells(currentRow + 1, 1).Value2 = blockName & " (Modified)"
+  Cells(currentRow + 1, 2).Value2 = blockFolder
+  
+  ' Do the same with built-in block math
+  Set newBlock = Testlab.cmd.BLOCK_ADD_SCALAR(block, Testlab.Factory.DOUBLE_TO_SCALAR(0.3, block.YQuantity))
+  Call Project.AddItem(blockFolder, blockName & " (Add Scalar)", newBlock, OverwriteIfExists:=1)
+  Cells(currentRow + 2, 1).Value2 = blockName & " (Add Scalar)"
+  Cells(currentRow + 2, 2).Value2 = blockFolder
+End Sub
+
+Sub BrowseRecursively(ByVal path As String, ByRef currentRow As Integer)
+  ' Continue browsing into folders and runs; write the block names and paths
+  For Each elemname In Project.ElementNames(path, 0)
+    Select Case Project.ElementType(path & "/" & elemname)
+    Case "Run", "Folder"
+      Call BrowseRecursively(path & "/" & elemname, currentRow)
+    Case "Block"
+      Cells(currentRow, 1).Value2 = elemname
+      Cells(currentRow, 2).Value2 = path
+      currentRow = currentRow + 1
+    End Select
+  Next
+End Sub
