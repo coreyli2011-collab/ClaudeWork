@@ -7,6 +7,23 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="David's Adventure">
+<link rel="apple-touch-icon" id="ati">
+<script>
+(function(){
+  var c=document.createElement('canvas');
+  c.width=180;c.height=180;
+  var x=c.getContext('2d');
+  x.fillStyle='#4a1080';
+  x.beginPath();
+  x.roundRect(0,0,180,180,30);
+  x.fill();
+  x.font='110px serif';
+  x.textAlign='center';
+  x.textBaseline='middle';
+  x.fillText('👑',90,95);
+  document.getElementById('ati').href=c.toDataURL('image/png');
+})();
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
 body{font-family:'Comic Sans MS','Chalkboard SE','Arial Rounded MT Bold',cursive;background:#1a0a2e;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden;}
