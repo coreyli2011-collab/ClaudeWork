@@ -2,12 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>David's Great Adventure – How to Play</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>David's Great Adventure – Setup Instructions</title>
     <style>
-        @media print {
-            .no-print { display: none; }
-            body { margin: 0; }
-        }
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             background: #f5f0e8;
@@ -18,126 +15,57 @@
         }
         .page {
             background: #fff;
-            max-width: 680px;
+            max-width: 600px;
             width: 100%;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.12);
             overflow: hidden;
         }
-
-        /* HEADER */
         .header {
             background: linear-gradient(135deg, #4a1080, #8B0000);
             color: #FFD700;
             text-align: center;
-            padding: 32px 24px 24px;
+            padding: 28px 24px 20px;
         }
-        .header-emoji { font-size: 52px; display: block; margin-bottom: 10px; }
-        .header h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: 0.5px; }
+        .header h1 { font-size: 26px; margin: 0 0 6px; }
         .header p  { font-size: 14px; color: #FFB6C1; margin: 0; }
-
-        /* PRINT BUTTON */
-        .print-bar {
-            background: #FFF8E1;
-            border-bottom: 1px solid #FFD700;
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .print-bar p { margin: 0; font-size: 13px; color: #555; flex: 1; }
-        .print-btn {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            color: #4a1080;
-            border: none;
-            border-radius: 8px;
-            padding: 9px 22px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .print-btn:hover { opacity: 0.88; }
-
-        /* BODY */
         .content { padding: 28px 32px 36px; }
-
-        .section {
-            margin-bottom: 26px;
+        .link-box {
+            background: #f0e8ff;
+            border: 2px solid #4a1080;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 28px;
+            text-align: center;
         }
+        .link-box p { margin: 0 0 6px; font-size: 14px; color: #555; }
+        .link-box a { font-size: 13px; color: #4a1080; font-weight: bold; word-break: break-all; }
         .section-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
             font-size: 17px;
             font-weight: bold;
             color: #4a1080;
             border-bottom: 2px solid #4a1080;
             padding-bottom: 6px;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
         }
-        .section-title .ico { font-size: 22px; }
-
-        ol, ul {
-            margin: 0;
-            padding-left: 22px;
-        }
+        ol { margin: 0; padding-left: 22px; }
         li {
-            font-size: 14.5px;
+            font-size: 15px;
             color: #333;
-            margin-bottom: 8px;
-            line-height: 1.55;
+            margin-bottom: 12px;
+            line-height: 1.6;
         }
         li strong { color: #111; }
-
-        .note-box {
+        .note {
             background: #FFF8E1;
             border-left: 4px solid #FFD700;
             border-radius: 0 8px 8px 0;
             padding: 12px 16px;
-            margin-top: 10px;
-        }
-        .note-box p {
-            margin: 0;
-            font-size: 13.5px;
+            margin-top: 20px;
+            font-size: 14px;
             color: #555;
-            line-height: 1.55;
+            line-height: 1.6;
         }
-        .note-box p + p { margin-top: 6px; }
-
-        .tip-box {
-            background: #f0fff4;
-            border-left: 4px solid #00C851;
-            border-radius: 0 8px 8px 0;
-            padding: 12px 16px;
-            margin-top: 10px;
-        }
-        .tip-box p {
-            margin: 0;
-            font-size: 13.5px;
-            color: #2a5a2a;
-            line-height: 1.55;
-        }
-        .tip-box p + p { margin-top: 5px; }
-
-        .scenes-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .scene-card {
-            background: #faf5ff;
-            border: 1px solid #d0b0f0;
-            border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 13.5px;
-            color: #333;
-        }
-        .scene-card .scene-emoji { font-size: 24px; display: block; margin-bottom: 4px; }
-        .scene-card strong { color: #4a1080; font-size: 13px; }
-
-        /* FOOTER */
         .footer {
             background: #4a1080;
             color: #FFD700;
@@ -151,133 +79,39 @@
 <body>
 <div class="page">
 
-    <!-- HEADER -->
     <div class="header">
-        <span class="header-emoji">👑 🦸 👑</span>
-        <h1>David's Great Adventure</h1>
-        <p>A Bible story game for Emma &amp; Ellis &nbsp;💕</p>
+        <h1>👑 David's Great Adventure 👑</h1>
+        <p>Setup instructions for iPhone &nbsp;💕</p>
     </div>
 
-    <!-- PRINT BUTTON (hidden when printing) -->
-    <div class="print-bar no-print">
-        <p>To save as PDF: click the button, then choose <strong>"Save as PDF"</strong> as the printer destination.</p>
-        <button class="print-btn" onclick="window.print()">🖨 Save as PDF</button>
-    </div>
-
-    <!-- CONTENT -->
     <div class="content">
 
-        <!-- PC -->
-        <div class="section">
-            <div class="section-title"><span class="ico">💻</span> Playing on a PC</div>
-            <ol>
-                <li>Find the file called <strong>david-adventure.html</strong></li>
-                <li>Double-click it — it opens in your web browser automatically</li>
-                <li>Make sure your <strong>volume is turned up</strong></li>
-                <li>Tap <strong>who is playing</strong> and the game begins!</li>
-            </ol>
+        <div class="link-box">
+            <p>Tap the link below to open the game — or copy and paste it into Safari:</p>
+            <a href="https://coreyli2011-collab.github.io/ClaudeWork/david-adventure.html">
+                👉 Tap here to open David's Great Adventure
+            </a>
         </div>
 
-        <!-- IPHONE -->
-        <div class="section">
-            <div class="section-title"><span class="ico">📱</span> Playing on an iPhone or iPad</div>
-            <p style="font-size:13.5px; color:#555; margin:0 0 10px;">
-                Do these steps <strong>once</strong> to get the file onto the device:
-            </p>
-            <ol>
-                <li><strong>Email</strong> the file <strong>david-adventure.html</strong> to yourself as an attachment</li>
-                <li>Open the email on the iPhone or iPad</li>
-                <li>Tap and hold the attachment → tap <strong>Share</strong> → tap <strong>Save to Files</strong></li>
-                <li>Save it somewhere easy to find — for example, <strong>On My iPhone</strong></li>
-            </ol>
-            <div class="note-box">
-                <p><strong>To play after saving:</strong></p>
-                <p>1. Open the <strong>Files</strong> app &nbsp;→&nbsp; find <strong>david-adventure.html</strong> &nbsp;→&nbsp; tap it</p>
-                <p>2. It opens in <strong>Safari</strong> — make sure volume is up, then tap who is playing!</p>
-            </div>
+        <div class="section-title">📲 How to add the game icon to your iPhone</div>
+        <ol>
+            <li>Tap the game link above to open it in <strong>Safari</strong> — or copy and paste it into the Safari address bar if it doesn't open automatically</li>
+            <li>Tap the <strong>Share button</strong> at the bottom of the screen — it looks like a box with an arrow pointing up ⬆️</li>
+            <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+            <li>Turn on <strong>"Open as Web App"</strong> if it appears</li>
+            <li>Tap <strong>Add</strong> — a crown icon 👑 will appear on your home screen</li>
+        </ol>
+
+        <div class="note">
+            ⚠️ <strong>Must use Safari — not Chrome.</strong><br>
+            If your iPhone opens the link in Chrome, copy the link, open the <strong>Safari app</strong>, and paste it into the address bar instead.
         </div>
 
-        <!-- HOME SCREEN ICON -->
-        <div class="section">
-            <div class="section-title"><span class="ico">📲</span> Adding a Home Screen Icon (Do Once)</div>
-            <p style="font-size:13.5px; color:#555; margin:0 0 10px;">
-                This creates a <strong>game icon on the iPhone home screen</strong> — just like a real app. Children can tap it directly without opening Files.
-            </p>
-            <ol>
-                <li>Follow the iPhone setup steps above to open the game in <strong>Safari</strong></li>
-                <li>Tap the <strong>Share button</strong> at the bottom of the screen &nbsp;(the box with an arrow pointing up &nbsp;⬆)</li>
-                <li>Scroll down in the Share menu and tap <strong>"Add to Home Screen"</strong></li>
-                <li>The name will show as <strong>David's Adventure</strong> — tap <strong>Add</strong> in the top right</li>
-                <li>A <strong>crown icon 👑</strong> now appears on the home screen — tap it anytime to play!</li>
-            </ol>
-            <div class="tip-box">
-                <p>✅ &nbsp;This only needs to be done <strong>once</strong> — the icon stays on the home screen permanently</p>
-                <p>✅ &nbsp;Tapping the icon opens the game directly in Safari — <strong>no Files app needed</strong></p>
-                <p>✅ &nbsp;Works on both <strong>iPhone and iPad</strong></p>
-            </div>
-        </div>
+    </div>
 
-        <!-- HOW IT WORKS -->
-        <div class="section">
-            <div class="section-title"><span class="ico">🎮</span> How the Game Works</div>
-            <ul>
-                <li>The game <strong>talks out loud</strong> — it tells children exactly what to do</li>
-                <li>Children simply <strong>tap</strong> what they see on the screen</li>
-                <li>There are <strong>5 scenes</strong> following the story of David from the Bible</li>
-                <li>At the end, tap the <strong>glowing star ⭐</strong> to hear personalised praise</li>
-                <li>Tap <strong>Play Again</strong> to restart from the beginning</li>
-            </ul>
-        </div>
-
-        <!-- THE 5 SCENES -->
-        <div class="section">
-            <div class="section-title"><span class="ico">📖</span> The 5 Scenes</div>
-            <div class="scenes-grid">
-                <div class="scene-card">
-                    <span class="scene-emoji">🐑</span>
-                    <strong>Scene 1 · The Shepherd Boy</strong><br>
-                    Tap all the sheep to collect them
-                </div>
-                <div class="scene-card">
-                    <span class="scene-emoji">🦁</span>
-                    <strong>Scene 2 · The Lion</strong><br>
-                    Tap David to scare the lion away
-                </div>
-                <div class="scene-card">
-                    <span class="scene-emoji">👑</span>
-                    <strong>Scene 3 · God's Choice</strong><br>
-                    Tap the golden crown
-                </div>
-                <div class="scene-card">
-                    <span class="scene-emoji">🪨</span>
-                    <strong>Scene 4 · Goliath the Giant</strong><br>
-                    Tap David to throw the stone
-                </div>
-                <div class="scene-card" style="grid-column: 1 / -1;">
-                    <span class="scene-emoji">🤴</span>
-                    <strong>Scene 5 · David Becomes King</strong><br>
-                    Tap King David 5 times to celebrate!
-                </div>
-            </div>
-        </div>
-
-        <!-- TIPS -->
-        <div class="section">
-            <div class="section-title"><span class="ico">💡</span> Tips</div>
-            <div class="tip-box">
-                <p>🔊 &nbsp;Works best with <strong>headphones or speaker volume turned up</strong> — the voice instructions are an important part of the game</p>
-                <p>📱 &nbsp;Best played in <strong>portrait mode</strong> (phone held upright)</p>
-                <p>🌐 &nbsp;No internet needed on <strong>PC</strong> &nbsp;·&nbsp; Internet needed on <strong>iPhone / iPad</strong></p>
-                <p>👂 &nbsp;The first tap unlocks the voice on iPhone — if no sound on the very first screen, tap any button and sound will start</p>
-            </div>
-        </div>
-
-    </div><!-- end content -->
-
-    <!-- FOOTER -->
     <div class="footer">
         Made with love for Emma &amp; Ellis &nbsp;💕 &nbsp;
-        <span>· &nbsp;A Bible Story Game &nbsp;·&nbsp; 👑 David's Great Adventure 👑</span>
+        <span>· &nbsp;A Bible Story Game</span>
     </div>
 
 </div>
