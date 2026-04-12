@@ -927,10 +927,9 @@ function returnToPlay() {
 }
 
 function changeName() {
-    // Show name picker — NO microphone, no permission prompt
-    buildNameGrid();
-    showScreen('screen-name-picker');
-    speak("Who is playing today? Tap your name!");
+    S.name=''; S.retries=0;
+    showScreen('screen-name-entry');
+    speak("What's your name, Princess?", ()=>setTimeout(startListening,400));
 }
 
 // Popular girl names shown as tap buttons
