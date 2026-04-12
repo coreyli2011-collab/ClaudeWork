@@ -294,6 +294,28 @@
         /* ── WIN ── */
         #win-stars { font-size:clamp(2.5rem,9vw,4.2rem); letter-spacing:8px; margin-bottom:4px; }
 
+        /* ── NAME PICKER ── */
+        .name-grid {
+            display:grid; grid-template-columns:repeat(3,1fr);
+            gap:10px; width:100%; max-width:480px; margin:12px 0;
+            max-height:55vh; overflow-y:auto;
+        }
+        .name-btn {
+            background:rgba(255,255,255,.2); border:2px solid rgba(255,255,255,.4);
+            border-radius:16px; padding:12px 6px; color:white;
+            font-family:inherit; font-size:clamp(.9rem,3vw,1.05rem);
+            cursor:pointer; touch-action:manipulation;
+            transition:transform .12s,background .12s;
+        }
+        .name-btn:active { transform:scale(.9); background:rgba(255,105,180,.5); }
+        .custom-name-row { display:flex; gap:8px; width:100%; max-width:480px; margin-top:4px; }
+        .custom-name-input {
+            flex:1; padding:12px 16px; border-radius:50px; border:2px solid rgba(255,255,255,.4);
+            background:rgba(255,255,255,.2); color:white; font-family:inherit;
+            font-size:1.1rem; outline:none;
+        }
+        .custom-name-input::placeholder { color:rgba(255,255,255,.5); }
+
         /* ── PARENT INFO ── */
         .parent-info {
             background:rgba(0,0,0,.25); border-radius:16px; padding:14px;
@@ -344,9 +366,27 @@
             🌊 Let's Play! 🌊
         </button>
         <button class="btn btn-purple" onclick="changeName()" style="width:100%; font-size:1rem; padding:12px;">
-            👤 I'm a different princess
+            👧 Different princess playing today?
         </button>
     </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN — NAME PICKER (no microphone)
+═══════════════════════════════════════ -->
+<div id="screen-name-picker" class="screen">
+    <h2 style="color:#FFD700; margin-bottom:4px;">👑 Who is playing today? 👑</h2>
+    <p style="margin-bottom:4px; opacity:.85;">Tap your name!</p>
+    <div class="name-grid" id="name-grid"></div>
+    <div class="custom-name-row">
+        <input class="custom-name-input" id="custom-name-input" type="text"
+               placeholder="Other name…" maxlength="20"
+               onkeydown="if(event.key==='Enter') useCustomName()"/>
+        <button class="btn btn-gold" onclick="useCustomName()" style="padding:12px 20px; font-size:1rem;">OK</button>
+    </div>
+    <button class="btn btn-purple" onclick="showScreen('screen-returning')" style="margin-top:14px; padding:11px 22px; font-size:.95rem;">
+        ← Back
+    </button>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -885,11 +925,46 @@ function returnToPlay() {
 }
 
 function changeName() {
-    // Clear saved name so microphone runs fresh
-    try { localStorage.removeItem('ps_name'); } catch(e){}
-    S.name=''; S.retries=0;
-    showScreen('screen-name-entry');
-    speak("What's your name, Princess?", ()=>setTimeout(startListening,400));
+    // Show name picker — NO microphone, no permission prompt
+    buildNameGrid();
+    showScreen('screen-name-picker');
+    speak("Who is playing today? Tap your name!");
+}
+
+// Popular girl names shown as tap buttons
+const PRINCESS_NAMES = [
+    'Emma','Olivia','Sophia','Isabella','Mia','Charlotte',
+    'Amelia','Ella','Harper','Evelyn','Abigail','Emily',
+    'Elizabeth','Lily','Grace','Chloe','Victoria','Riley',
+    'Zoey','Nora','Hannah','Lucy','Sophie','Layla',
+    'Aurora','Ellie','Scarlett','Aria','Penelope','Stella'
+];
+
+function buildNameGrid() {
+    const grid = document.getElementById('name-grid');
+    grid.innerHTML = '';
+    PRINCESS_NAMES.forEach(n => {
+        const btn = document.createElement('button');
+        btn.className = 'name-btn';
+        btn.textContent = '👧 ' + n;
+        btn.addEventListener('click',    () => pickName(n));
+        btn.addEventListener('touchstart', e => { e.preventDefault(); pickName(n); }, { passive:false });
+        grid.appendChild(btn);
+    });
+}
+
+function pickName(name) {
+    S.name = name; saveName(); sfxSparkle();
+    speak(`Hello, Princess ${name}! Let's get you dressed!`, () => openDressup(false));
+}
+
+function useCustomName() {
+    const input = document.getElementById('custom-name-input');
+    const raw = (input.value || '').trim();
+    if (!raw) return;
+    const name = cap(raw);
+    input.value = '';
+    pickName(name);
 }
 
 function openDressup(fromMap) {
