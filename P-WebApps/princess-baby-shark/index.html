@@ -317,6 +317,39 @@
 <div id="ocean-bg"></div>
 
 <!-- ═══════════════════════════════════════
+     SCREEN 0 — WELCOME BACK (returning players)
+═══════════════════════════════════════ -->
+<div id="screen-returning" class="screen">
+    <div class="card" style="text-align:center;">
+        <h1>🦈✨ Welcome Back! ✨🦈</h1>
+        <div class="shark-wrap">
+            <svg class="baby-shark" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="115" cy="85" rx="80" ry="50" fill="#5BC8F5"/>
+                <polygon points="35,85 8,58 8,112" fill="#4AB4E0"/>
+                <polygon points="100,35 138,36 120,62" fill="#4AB4E0"/>
+                <ellipse cx="128" cy="97" rx="50" ry="27" fill="#E8F9FF"/>
+                <ellipse cx="90" cy="115" rx="25" ry="13" fill="#4AB4E0" transform="rotate(-25 90 115)"/>
+                <circle cx="165" cy="74" r="14" fill="white"/>
+                <circle cx="168" cy="74" r="9" fill="#1a1a2e"/>
+                <circle cx="171" cy="71" r="3.5" fill="white"/>
+                <path d="M145,96 Q165,110 183,96" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <ellipse cx="176" cy="86" rx="9" ry="5.5" fill="#FFB3BA" opacity=".65"/>
+                <polygon points="130,38 137,25 144,38 151,25 158,38" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+                <text x="38" y="48" font-size="15">✨</text><text x="170" y="42" font-size="13">⭐</text>
+            </svg>
+        </div>
+        <div class="speech-bubble" id="welcome-back-bubble">Welcome back, Princess! 👑</div>
+        <br>
+        <button class="btn btn-pink" onclick="returnToPlay()" style="width:100%; margin-bottom:12px;">
+            🌊 Let's Play! 🌊
+        </button>
+        <button class="btn btn-purple" onclick="changeName()" style="width:100%; font-size:1rem; padding:12px;">
+            👤 I'm a different princess
+        </button>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════
      SCREEN 1 — WELCOME
 ═══════════════════════════════════════ -->
 <div id="screen-welcome" class="screen active">
@@ -787,7 +820,7 @@ function retryOrGiveUp() {
 function giveUpName() {
     const n = FALLBACK[Math.floor(Math.random()*FALLBACK.length)];
     speak(`I'll call you Princess ${n}! Let's go on an adventure!`, ()=>{
-        S.name=n; S.retries=0; openDressup(false);
+        S.name=n; S.retries=0; saveName(); openDressup(false);
     });
 }
 
@@ -800,7 +833,7 @@ function showConfirm(name) {
 function confirmName(yes) {
     if (yes) {
         S.name = document.getElementById('heard-name').textContent;
-        S.retries=0; sfxSparkle();
+        S.retries=0; sfxSparkle(); saveName();
         speak(`Wonderful! Hello Princess ${S.name}! Let's get you dressed for adventure!`, ()=>openDressup(false));
     } else {
         showScreen('screen-name-entry');
@@ -810,9 +843,51 @@ function confirmName(yes) {
 
 function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase(); }
 
+// ── SAVE / RESTORE (so microphone is only needed once, ever) ──
+function saveName() {
+    try { localStorage.setItem('ps_name', S.name); } catch(e){}
+}
+function saveStyle() {
+    try { localStorage.setItem('ps_style', JSON.stringify(S.style)); } catch(e){}
+}
+function loadSaved() {
+    try {
+        const n = localStorage.getItem('ps_name');
+        const st = localStorage.getItem('ps_style');
+        if (n) S.name = n;
+        if (st) Object.assign(S.style, JSON.parse(st));
+        return !!n;
+    } catch(e){ return false; }
+}
+
 // ── FLOW ──────────────────────────────────────────────────────
 function beginAdventure() {
     ctx();
+    // Check if we already know this princess — skip microphone if so
+    if (loadSaved()) {
+        const bubble = document.getElementById('welcome-back-bubble');
+        if (bubble) bubble.textContent = `Welcome back, Princess ${S.name}! 👑`;
+        showScreen('screen-returning');
+        speak(`Welcome back, Princess ${S.name}! Ready for more adventure?`);
+    } else {
+        showScreen('screen-name-entry');
+        speak("What's your name, Princess?", ()=>setTimeout(startListening,400));
+    }
+}
+
+function returnToPlay() {
+    sfxSparkle();
+    document.getElementById('map-greeting').textContent = `🌊 Where to, Princess ${S.name}? 🌊`;
+    updateMapDone();
+    updatePrincess();
+    showScreen('screen-map');
+    speak(`Let's go, Princess ${S.name}!`);
+}
+
+function changeName() {
+    // Clear saved name so microphone runs fresh
+    try { localStorage.removeItem('ps_name'); } catch(e){}
+    S.name=''; S.retries=0;
     showScreen('screen-name-entry');
     speak("What's your name, Princess?", ()=>setTimeout(startListening,400));
 }
@@ -825,7 +900,7 @@ function openDressup(fromMap) {
 }
 
 function proceedToMap() {
-    sfxSparkle();
+    sfxSparkle(); saveStyle();
     document.getElementById('map-greeting').textContent = `🌊 Where to, Princess ${S.name}? 🌊`;
     updateMapDone();
     showScreen('screen-map');
