@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- viewport-fit=cover is required for iPhone notch / Dynamic Island -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- Makes the game feel like a native app when added to iPhone/iPad Home Screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Princess Shark">
+    <title>Princess &amp; Baby Shark's Ocean Adventure</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
+    <style>
+        /* ── RESET ── */
+        * {
+            margin:0; padding:0; box-sizing:border-box;
+            -webkit-tap-highlight-color:transparent;
+            -webkit-touch-callout:none;   /* prevents iOS long-press popup menu */
+            user-select:none;
+        }
+        html, body {
+            width:100%; height:100%; overflow:hidden;
+            font-family:'Bubblegum Sans','Comic Sans MS',cursive;
+            overscroll-behavior:none;              /* stops iOS rubber-band scroll */
+            -webkit-overflow-scrolling:touch;
+        }
+        body {
+            background:linear-gradient(180deg,#003d7a 0%,#0077b6 40%,#00b4d8 100%);
+            /* safe-area-inset respects iPhone notch and home bar */
+            padding-top:    env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left:   env(safe-area-inset-left);
+            padding-right:  env(safe-area-inset-right);
+        }
+
+        /* ── OCEAN BG BUBBLES ── */
+        #ocean-bg { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+        .bg-bubble {
+            position:absolute; border-radius:50%;
+            background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.4),rgba(255,255,255,.1));
+            border:1.5px solid rgba(255,255,255,.4);
+            animation:bgRise linear infinite; bottom:-150px;
+        }
+        @keyframes bgRise {
+            0%   { transform:translateY(0) scale(1); opacity:0; }
+            10%  { opacity:.8; }
+            90%  { opacity:.6; }
+            100% { transform:translateY(-115vh) scale(1.1); opacity:0; }
+        }
+
+        /* ── SCREENS — fade transition ── */
+        .screen {
+            position:fixed; inset:0; z-index:10;
+            display:none; flex-direction:column;
+            align-items:center; justify-content:center;
+            padding:16px; overflow-y:auto;
+            opacity:0; transition:opacity .35s ease;
+        }
+        .screen.active   { display:flex; }
+        .screen.fade-in  { opacity:1; }
+
+        /* ── CARDS ── */
+        .card {
+            background:rgba(255,255,255,.2); backdrop-filter:blur(10px);
+            border-radius:24px; border:2px solid rgba(255,255,255,.4);
+            padding:20px; width:100%; max-width:480px; text-align:center;
+        }
+
+        /* ── TYPE ── */
+        h1 { font-size:clamp(1.7rem,6vw,2.8rem); color:#FFD700; text-shadow:2px 2px 0 #FF8C00,0 0 20px rgba(255,215,0,.5); margin-bottom:6px; }
+        h2 { font-size:clamp(1.2rem,5vw,2rem); color:white; text-shadow:1px 1px 0 rgba(0,0,80,.3); margin-bottom:10px; }
+        p  { font-size:clamp(.95rem,3.5vw,1.25rem); color:white; line-height:1.5; }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display:inline-block; padding:14px 28px; border-radius:50px; border:none;
+            cursor:pointer; font-family:inherit; font-size:clamp(1rem,4vw,1.45rem);
+            font-weight:bold; transition:transform .1s,box-shadow .1s;
+            box-shadow:0 6px 0 rgba(0,0,0,.22); touch-action:manipulation;
+        }
+        .btn:active { transform:translateY(3px); box-shadow:0 3px 0 rgba(0,0,0,.22); }
+        .btn-pink   { background:linear-gradient(135deg,#FF69B4,#FF1493); color:white; }
+        .btn-purple { background:linear-gradient(135deg,#9B59B6,#6C3483); color:white; }
+        .btn-gold   { background:linear-gradient(135deg,#FFD700,#FFA500); color:#5D4E37; }
+        .btn-blue   { background:linear-gradient(135deg,#00B4D8,#0077B6); color:white; }
+        .btn-green  { background:linear-gradient(135deg,#2ECC71,#27AE60); color:white; }
+
+        /* ── BACK / HOME BUTTON ── */
+        .back-btn {
+            position:fixed; top:calc(14px + env(safe-area-inset-top)); left:14px; z-index:50;
+            background:rgba(255,255,255,.25); border:2px solid rgba(255,255,255,.5);
+            border-radius:50%; width:50px; height:50px; font-size:1.4rem;
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
+            touch-action:manipulation; transition:background .2s;
+        }
+        .back-btn:hover { background:rgba(255,255,255,.4); }
+
+        /* ── BABY SHARK ── */
+        .shark-wrap { display:flex; justify-content:center; margin:10px 0; }
+        .baby-shark {
+            width:clamp(95px,27vw,150px);
+            filter:drop-shadow(0 8px 16px rgba(0,0,80,.3));
+            animation:sharkBob 2s ease-in-out infinite;
+        }
+        @keyframes sharkBob {
+            0%,100% { transform:translateY(0) rotate(0deg); }
+            25%     { transform:translateY(-8px) rotate(2deg); }
+            75%     { transform:translateY(4px) rotate(-1deg); }
+        }
+        .shark-talking { animation:sharkTalk .28s ease-in-out infinite !important; }
+        @keyframes sharkTalk {
+            0%,100% { transform:translateY(0) scaleY(1); }
+            50%     { transform:translateY(-5px) scaleY(1.07); }
+        }
+
+        /* ── SPEECH BUBBLE ── */
+        .speech-bubble {
+            background:white; border-radius:20px; padding:10px 18px;
+            margin:6px auto; max-width:340px;
+            font-size:clamp(.95rem,3.5vw,1.25rem); color:#333;
+            position:relative; box-shadow:0 4px 12px rgba(0,0,0,.15);
+        }
+        .speech-bubble::after {
+            content:''; position:absolute; bottom:-16px; left:50%; transform:translateX(-50%);
+            border:10px solid transparent; border-top-color:white;
+        }
+
+        /* ── MIC BUTTON ── */
+        .mic-btn {
+            width:88px; height:88px; border-radius:50%;
+            background:linear-gradient(135deg,#FF69B4,#FF1493); border:none;
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
+            font-size:2.7rem; box-shadow:0 7px 0 #C2185B;
+            touch-action:manipulation; margin:12px auto; transition:transform .1s;
+        }
+        .mic-btn.listening {
+            animation:micPulse 1s ease-in-out infinite;
+            background:linear-gradient(135deg,#E74C3C,#C0392B); box-shadow:0 7px 0 #922B21;
+        }
+        @keyframes micPulse {
+            0%   { box-shadow:0 7px 0 #922B21,0 0 0 0 rgba(231,76,60,.7); transform:scale(1); }
+            50%  { box-shadow:0 7px 0 #922B21,0 0 0 22px rgba(231,76,60,0); transform:scale(1.06); }
+            100% { box-shadow:0 7px 0 #922B21,0 0 0 0 rgba(231,76,60,0); transform:scale(1); }
+        }
+
+        /* ── SPARKLE ── */
+        .sparkle {
+            position:fixed; pointer-events:none; font-size:1.5rem;
+            animation:sparkleFloat 1s ease-out forwards; z-index:200;
+        }
+        @keyframes sparkleFloat {
+            0%   { transform:translateY(0) scale(0); opacity:1; }
+            50%  { transform:translateY(-45px) scale(1.3); opacity:1; }
+            100% { transform:translateY(-90px) scale(.5); opacity:0; }
+        }
+
+        /* ── CONFETTI ── */
+        .confetti-piece {
+            position:fixed; z-index:300; pointer-events:none;
+            animation:confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            0%   { transform:translateY(-20px) rotate(0deg); opacity:1; }
+            100% { transform:translateY(105vh) rotate(720deg); opacity:.4; }
+        }
+
+        /* ── DRESS-UP ── */
+        .princess-preview { width:clamp(95px,21vw,135px); margin:6px auto; display:block; }
+        .option-row { display:flex; justify-content:center; gap:10px; margin:5px 0; flex-wrap:wrap; }
+        .option-btn {
+            width:52px; height:52px; border-radius:50%; border:3px solid rgba(255,255,255,.5);
+            cursor:pointer; font-size:1.6rem; display:flex; align-items:center; justify-content:center;
+            touch-action:manipulation; background:rgba(255,255,255,.2); transition:transform .2s,border-color .2s;
+        }
+        .option-btn:active { transform:scale(.88); }
+        .option-btn.selected { border-color:#FFD700; border-width:4px; background:rgba(255,215,0,.2); transform:scale(1.1); }
+        .color-btn {
+            width:52px; height:52px; border-radius:50%; border:4px solid rgba(255,255,255,.5);
+            cursor:pointer; touch-action:manipulation; transition:transform .2s,border-color .2s;
+        }
+        .color-btn.selected { border-color:#FFD700; border-width:5px; transform:scale(1.18); }
+        .option-label { color:rgba(255,255,255,.9); font-size:.88rem; margin:5px 0 3px; }
+
+        /* ── OCEAN MAP ── */
+        .map-grid { display:grid; grid-template-columns:1fr 1fr; gap:13px; width:100%; max-width:480px; margin:10px 0; }
+        .map-location {
+            background:rgba(255,255,255,.2); backdrop-filter:blur(8px);
+            border:2px solid rgba(255,255,255,.4); border-radius:20px;
+            padding:16px 10px; text-align:center; cursor:pointer;
+            transition:transform .2s,background .2s; touch-action:manipulation;
+            position:relative;
+        }
+        .map-location:active { transform:scale(.95); }
+        .map-location:hover  { background:rgba(255,255,255,.3); transform:scale(1.03); }
+        .map-location.done   { border-color:rgba(255,215,0,.6); background:rgba(255,215,0,.15); }
+        .loc-emoji { font-size:clamp(2rem,7.5vw,3rem); display:block; }
+        .loc-name  { color:white; font-size:clamp(.82rem,2.8vw,1.05rem); margin-top:5px; }
+        .loc-done  { position:absolute; top:6px; right:8px; font-size:.85rem; }
+
+        /* ── HUD ── */
+        .game-hud {
+            position:fixed; top:calc(12px + env(safe-area-inset-top));
+            left:0; right:0; z-index:20;
+            display:flex; justify-content:space-between; align-items:center; padding:0 14px;
+        }
+        .hud-box {
+            background:rgba(255,255,255,.25); backdrop-filter:blur(8px);
+            border-radius:20px; padding:7px 16px; color:white;
+            font-size:clamp(.95rem,3.2vw,1.25rem); border:1px solid rgba(255,255,255,.4);
+        }
+        .hud-btn { cursor:pointer; border:none; font-family:inherit; touch-action:manipulation; }
+
+        /* ── PROGRESS BAR ── */
+        .prog-outer { background:rgba(255,255,255,.2); border-radius:20px; height:18px; width:100%; max-width:220px; overflow:hidden; }
+        .prog-inner  { height:100%; background:linear-gradient(90deg,#FFD700,#FFA500); border-radius:20px; transition:width .3s ease; }
+
+        /* ── BUBBLE POP ── */
+        #bubble-pop-area { position:fixed; inset:0; z-index:5; overflow:hidden; pointer-events:none; }
+        .game-bubble {
+            position:absolute; border-radius:50%;
+            background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.7),rgba(135,206,250,.3));
+            border:2px solid rgba(255,255,255,.6);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; pointer-events:all; touch-action:manipulation;
+            animation:bubbleRise linear forwards;
+        }
+        @keyframes bubbleRise {
+            0%   { transform:translateY(0); opacity:0; }
+            5%   { opacity:1; }
+            95%  { opacity:1; }
+            100% { transform:translateY(-115vh) translateX(var(--drift,0px)); opacity:0; }
+        }
+
+        /* ── MEMORY ── */
+        .memory-grid { display:grid; gap:clamp(7px,2vw,11px); margin:8px 0; justify-content:center; }
+        .memory-card { width:clamp(64px,17vw,86px); height:clamp(64px,17vw,86px); cursor:pointer; perspective:600px; touch-action:manipulation; }
+        .mem-inner   { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .4s; }
+        .memory-card.flipped .mem-inner { transform:rotateY(180deg); }
+        .memory-card.matched { opacity:0; pointer-events:none; transition:opacity .5s .2s; }
+        .memory-card.shake   { animation:cardShake .4s ease; }
+        @keyframes cardShake {
+            0%,100% { transform:translateX(0); }
+            25%     { transform:translateX(-8px); }
+            75%     { transform:translateX(8px); }
+        }
+        .mem-front, .mem-back {
+            position:absolute; inset:0; backface-visibility:hidden;
+            border-radius:14px; display:flex; align-items:center; justify-content:center;
+        }
+        .mem-front { background:linear-gradient(135deg,#9B59B6,#6C3483); border:3px solid rgba(255,255,255,.4); font-size:1.5rem; }
+        .mem-back  { background:white; transform:rotateY(180deg); border:3px solid #FFD700; font-size:clamp(1.5rem,4.5vw,2.2rem); }
+
+        /* ── TREASURE HUNT ── */
+        #treasure-scene { position:fixed; inset:0; z-index:5; }
+        .treasure-spot {
+            position:absolute; width:68px; height:68px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center; font-size:2.2rem; z-index:15;
+        }
+        .treasure-spot.hidden { opacity:0; pointer-events:none; }
+        .treasure-spot.found  { animation:revealT .5s ease-out forwards; pointer-events:none; }
+        @keyframes revealT {
+            0%   { transform:scale(0) rotate(-180deg); opacity:0; }
+            60%  { transform:scale(1.3) rotate(10deg); opacity:1; }
+            100% { transform:scale(1) rotate(0deg); opacity:1; }
+        }
+        .tap-zone { position:absolute; width:80px; height:80px; z-index:16; cursor:pointer; touch-action:manipulation; }
+        .t-hint   {
+            position:absolute; border-radius:50%;
+            border:3px dashed rgba(255,255,255,.55);
+            animation:hintPulse 1.5s ease-in-out infinite; pointer-events:none; z-index:14;
+        }
+        @keyframes hintPulse {
+            0%,100% { opacity:.4; transform:scale(.88); }
+            50%     { opacity:.9; transform:scale(1.12); }
+        }
+
+        /* ── MUSIC ── */
+        .music-stage { display:flex; justify-content:center; gap:clamp(6px,2.8vw,16px); margin:8px 0; flex-wrap:wrap; }
+        .music-char  { display:flex; flex-direction:column; align-items:center; cursor:pointer; touch-action:manipulation; }
+        .music-emoji {
+            font-size:clamp(2rem,6.5vw,3.2rem);
+            background:rgba(255,255,255,.2); border-radius:50%;
+            width:clamp(62px,16vw,90px); height:clamp(62px,16vw,90px);
+            display:flex; align-items:center; justify-content:center;
+            border:3px solid rgba(255,255,255,.4); transition:transform .12s;
+        }
+        .music-char:active .music-emoji { transform:scale(.88); }
+        .music-emoji.lit {
+            background:rgba(255,215,0,.5); border-color:#FFD700;
+            transform:scale(1.22); box-shadow:0 0 22px rgba(255,215,0,.55);
+        }
+        .music-name { color:white; font-size:clamp(.6rem,2.2vw,.82rem); margin-top:5px; text-align:center; white-space:pre-line; }
+
+        /* ── WIN ── */
+        #win-stars { font-size:clamp(2.5rem,9vw,4.2rem); letter-spacing:8px; margin-bottom:4px; }
+
+        /* ── PARENT INFO ── */
+        .parent-info {
+            background:rgba(0,0,0,.25); border-radius:16px; padding:14px;
+            margin-top:12px; max-width:480px; width:100%;
+        }
+        .parent-info summary { cursor:pointer; color:rgba(255,255,255,.85); font-size:.9rem; list-style:none; }
+        .parent-info summary::-webkit-details-marker { display:none; }
+        .parent-info p, .parent-info li {
+            color:rgba(255,255,255,.82); font-size:.84rem; margin-top:7px; line-height:1.55;
+        }
+        .parent-info ol { padding-left:18px; margin-top:6px; }
+        .parent-info h4 { color:#FFD700; font-size:.9rem; margin-top:10px; }
+        .parent-info hr { border:none; border-top:1px solid rgba(255,255,255,.2); margin:8px 0; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     OCEAN BACKGROUND
+═══════════════════════════════════════ -->
+<div id="ocean-bg"></div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 1 — WELCOME
+═══════════════════════════════════════ -->
+<div id="screen-welcome" class="screen active">
+    <div class="card">
+        <h1>🦈✨ Princess &amp;<br>Baby Shark ✨🦈</h1>
+        <div class="shark-wrap">
+            <svg class="baby-shark" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="115" cy="85" rx="80" ry="50" fill="#5BC8F5"/>
+                <polygon points="35,85 8,58 8,112" fill="#4AB4E0"/>
+                <polygon points="100,35 138,36 120,62" fill="#4AB4E0"/>
+                <ellipse cx="128" cy="97" rx="50" ry="27" fill="#E8F9FF"/>
+                <ellipse cx="90" cy="115" rx="25" ry="13" fill="#4AB4E0" transform="rotate(-25 90 115)"/>
+                <circle cx="165" cy="74" r="14" fill="white"/>
+                <circle cx="168" cy="74" r="9" fill="#1a1a2e"/>
+                <circle cx="171" cy="71" r="3.5" fill="white"/>
+                <path d="M148,98 Q168,110 185,98" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <ellipse cx="176" cy="88" rx="9" ry="5.5" fill="#FFB3BA" opacity=".65"/>
+                <polygon points="130,38 137,25 144,38 151,25 158,38" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+                <text x="38" y="48" font-size="15">✨</text><text x="170" y="42" font-size="13">⭐</text>
+            </svg>
+        </div>
+        <h2>Ocean Adventure!</h2>
+        <p>Join Baby Shark on a magical underwater princess adventure! 🌊👑</p>
+        <br>
+        <button class="btn btn-pink" onclick="beginAdventure()" style="width:100%;">
+            🌊 Start Adventure! 🌊
+        </button>
+    </div>
+
+    <details class="parent-info">
+        <summary>👋 For Parents — tap to read first ▼</summary>
+
+        <h4>🎤 Microphone Permission (Voice Name Entry)</h4>
+        <p>This game asks your child's name using her voice. The very first time:</p>
+        <ol>
+            <li>A pop-up will say <em>"Allow microphone?"</em></li>
+            <li>Tap <strong>Allow</strong></li>
+            <li><strong>That's it — it never asks again.</strong></li>
+        </ol>
+        <p>If the mic doesn't catch the name after 3 tries, Baby Shark will give her a fun princess name automatically — no worries!</p>
+
+        <hr>
+        <h4>📱 Playing on iPhone or iPad</h4>
+        <p><strong>Important:</strong> Voice name entry requires a secure web link (https://...). It will NOT work from a local file on iPhone/iPad. Use the public link for this game — ask Corey for the URL.</p>
+        <p>Once you have the link, open it in <strong>Safari</strong> on iPhone or iPad for the best experience.</p>
+
+        <hr>
+        <h4>🏠 Add to iPhone / iPad Home Screen (makes it feel like an app!)</h4>
+        <ol>
+            <li>Open the game link in <strong>Safari</strong></li>
+            <li>Tap the <strong>Share button</strong> at the bottom of Safari (the box with an arrow pointing up ↑)</li>
+            <li>Scroll down in the menu and tap <strong>"Add to Home Screen"</strong></li>
+            <li>Tap <strong>"Add"</strong> in the top-right corner</li>
+            <li>Done! The game icon now appears on the Home Screen — tap it to open fullscreen, just like an app</li>
+        </ol>
+
+        <hr>
+        <h4>💡 Tips for best play</h4>
+        <p>🔊 Turn volume up before starting<br>
+           🤫 Play in a quiet room for best voice recognition<br>
+           🖐️ All interactions are tap-only — no reading or typing needed<br>
+           👧 Designed for ages 4–6</p>
+    </details>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 2 — NAME ENTRY
+═══════════════════════════════════════ -->
+<div id="screen-name-entry" class="screen">
+    <div class="card">
+        <div class="shark-wrap">
+            <svg class="baby-shark" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="115" cy="85" rx="80" ry="50" fill="#5BC8F5"/>
+                <polygon points="35,85 8,58 8,112" fill="#4AB4E0"/>
+                <polygon points="100,35 138,36 120,62" fill="#4AB4E0"/>
+                <ellipse cx="128" cy="97" rx="50" ry="27" fill="#E8F9FF"/>
+                <ellipse cx="90" cy="115" rx="25" ry="13" fill="#4AB4E0" transform="rotate(-25 90 115)"/>
+                <circle cx="165" cy="74" r="14" fill="white"/>
+                <circle cx="168" cy="74" r="9" fill="#1a1a2e"/>
+                <circle cx="171" cy="71" r="3.5" fill="white"/>
+                <path d="M148,98 Q168,110 185,98" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <ellipse cx="176" cy="88" rx="9" ry="5.5" fill="#FFB3BA" opacity=".65"/>
+                <polygon points="130,38 137,25 144,38 151,25 158,38" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+            </svg>
+        </div>
+        <div class="speech-bubble" id="name-bubble">What's your name, Princess? 👑</div>
+        <br>
+        <button class="mic-btn" id="mic-btn" onclick="startListening()">🎤</button>
+        <p id="listen-status" style="margin-top:6px; font-size:.95rem; opacity:.8; min-height:1.5em;"></p>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 3 — NAME CONFIRM
+═══════════════════════════════════════ -->
+<div id="screen-name-confirm" class="screen">
+    <div class="card">
+        <div class="shark-wrap">
+            <svg class="baby-shark" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="115" cy="85" rx="80" ry="50" fill="#5BC8F5"/>
+                <polygon points="35,85 8,58 8,112" fill="#4AB4E0"/>
+                <polygon points="100,35 138,36 120,62" fill="#4AB4E0"/>
+                <ellipse cx="128" cy="97" rx="50" ry="27" fill="#E8F9FF"/>
+                <ellipse cx="90" cy="115" rx="25" ry="13" fill="#4AB4E0" transform="rotate(-25 90 115)"/>
+                <circle cx="165" cy="74" r="14" fill="white"/>
+                <circle cx="168" cy="74" r="9" fill="#1a1a2e"/>
+                <circle cx="171" cy="71" r="3.5" fill="white"/>
+                <path d="M148,98 Q168,110 185,98" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <ellipse cx="176" cy="88" rx="9" ry="5.5" fill="#FFB3BA" opacity=".65"/>
+                <polygon points="130,38 137,25 144,38 151,25 158,38" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+            </svg>
+        </div>
+        <div class="speech-bubble">
+            I heard… <strong id="heard-name" style="color:#FF1493; font-size:1.35em;"></strong>!<br>Is that right? 🤔
+        </div>
+        <br>
+        <div style="display:flex; gap:14px; justify-content:center; margin-top:8px;">
+            <button class="btn btn-green" onclick="confirmName(true)"  style="font-size:1.4rem; padding:13px 24px;">👍 Yes!</button>
+            <button class="btn btn-pink"  onclick="confirmName(false)" style="font-size:1.4rem; padding:13px 24px;">👎 Again</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 4 — DRESS-UP
+═══════════════════════════════════════ -->
+<div id="screen-dressup" class="screen">
+    <button class="back-btn" id="dressup-back" onclick="goHome()" style="display:none;">🏠</button>
+    <div class="card" style="max-width:520px;">
+        <h2 id="dressup-title">👑 Get Dressed, Princess!</h2>
+        <svg id="princess-svg" class="princess-preview" viewBox="0 0 160 250" xmlns="http://www.w3.org/2000/svg">
+            <path id="p-dress"  d="M50,125 Q28,165 22,250 L138,250 Q132,165 110,125 Z" fill="#FF69B4"/>
+            <path id="p-dress2" d="M55,135 Q80,152 105,135 Q122,168 126,250 L34,250 Q38,168 55,135 Z" fill="#FF85C2" opacity=".45"/>
+            <rect x="60" y="103" width="40" height="30" rx="8" fill="#FFD4B2"/>
+            <ellipse cx="44"  cy="122" rx="10" ry="24" fill="#FFD4B2" transform="rotate(12 44 122)"/>
+            <ellipse cx="116" cy="122" rx="10" ry="24" fill="#FFD4B2" transform="rotate(-12 116 122)"/>
+            <ellipse cx="80" cy="76" rx="33" ry="35" fill="#8B4513" opacity=".9"/>
+            <ellipse cx="80" cy="78" rx="29" ry="30" fill="#FFD4B2"/>
+            <path d="M48,74 Q38,95 42,115 Q50,103 56,96 Z" fill="#8B4513"/>
+            <path d="M112,74 Q122,95 118,115 Q110,103 104,96 Z" fill="#8B4513"/>
+            <ellipse cx="68" cy="73" rx="6.5" ry="7" fill="white"/>
+            <ellipse cx="92" cy="73" rx="6.5" ry="7" fill="white"/>
+            <circle cx="69" cy="74" r="4" fill="#3D2B1F"/>
+            <circle cx="93" cy="74" r="4" fill="#3D2B1F"/>
+            <circle cx="71" cy="72" r="1.5" fill="white"/>
+            <circle cx="95" cy="72" r="1.5" fill="white"/>
+            <line x1="62" y1="67" x2="63" y2="63" stroke="#3D2B1F" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="68" y1="66" x2="68" y2="62" stroke="#3D2B1F" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="74" y1="67" x2="75" y2="63" stroke="#3D2B1F" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="86" y1="67" x2="85" y2="63" stroke="#3D2B1F" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="92" y1="66" x2="92" y2="62" stroke="#3D2B1F" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="98" y1="67" x2="97" y2="63" stroke="#3D2B1F" stroke-width="1.4" stroke-linecap="round"/>
+            <ellipse cx="80" cy="83" rx="3" ry="2" fill="#FFBB94"/>
+            <path d="M70,91 Q80,100 90,91" stroke="#E0856B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <ellipse cx="62" cy="85" rx="8" ry="5" fill="#FFB3BA" opacity=".6"/>
+            <ellipse cx="98" cy="85" rx="8" ry="5" fill="#FFB3BA" opacity=".6"/>
+            <g id="p-crown">
+                <polygon points="58,57 64,40 70,54 80,37 90,54 96,40 102,57" fill="#FFD700" stroke="#FFA500" stroke-width="2"/>
+                <circle cx="64" cy="43" r="4" fill="#FF69B4"/>
+                <circle cx="80" cy="38" r="5" fill="#9B59B6"/>
+                <circle cx="96" cy="43" r="4" fill="#FF69B4"/>
+            </g>
+            <g id="p-accessory">
+                <line x1="122" y1="112" x2="142" y2="92" stroke="#8B4513" stroke-width="4" stroke-linecap="round"/>
+                <polygon points="132,74 135,82 143,82 137,87 139,95 132,90 125,95 127,87 121,82 129,82" fill="#FFD700"/>
+                <circle cx="132" cy="84" r="3.5" fill="white" opacity=".8"/>
+            </g>
+        </svg>
+
+        <p class="option-label">👑 Pick a Crown</p>
+        <div class="option-row">
+            <button class="option-btn selected" data-crown="1" onclick="selectCrown(1,this)">👑</button>
+            <button class="option-btn"          data-crown="2" onclick="selectCrown(2,this)">💎</button>
+            <button class="option-btn"          data-crown="3" onclick="selectCrown(3,this)">⭐</button>
+        </div>
+        <p class="option-label">🌸 Pick a Dress Colour</p>
+        <div class="option-row">
+            <button class="color-btn selected" style="background:#FF69B4;" data-color="#FF69B4" onclick="selectColor('#FF69B4',this)"></button>
+            <button class="color-btn"          style="background:#9B59B6;" data-color="#9B59B6" onclick="selectColor('#9B59B6',this)"></button>
+            <button class="color-btn"          style="background:#00B4D8;" data-color="#00B4D8" onclick="selectColor('#00B4D8',this)"></button>
+            <button class="color-btn"          style="background:#FFD700;" data-color="#FFD700" onclick="selectColor('#FFD700',this)"></button>
+            <button class="color-btn"          style="background:#2ECC71;" data-color="#2ECC71" onclick="selectColor('#2ECC71',this)"></button>
+        </div>
+        <p class="option-label">✨ Pick an Accessory</p>
+        <div class="option-row">
+            <button class="option-btn selected" data-acc="wand"     onclick="selectAcc('wand',this)">🪄</button>
+            <button class="option-btn"          data-acc="necklace" onclick="selectAcc('necklace',this)">📿</button>
+            <button class="option-btn"          data-acc="shield"   onclick="selectAcc('shield',this)">🛡️</button>
+        </div>
+        <button class="btn btn-gold" onclick="proceedToMap()" style="width:100%; margin-top:13px;">
+            🌊 Let's Go! 🌊
+        </button>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 5 — OCEAN MAP
+═══════════════════════════════════════ -->
+<div id="screen-map" class="screen">
+    <h2 style="color:#FFD700; margin-bottom:2px;">🌊 Ocean Map 🌊</h2>
+    <p id="map-greeting" style="text-align:center; margin-bottom:10px;"></p>
+    <div class="map-grid">
+        <div class="map-location" id="loc-bubble-pop" onclick="launchGame('bubble-pop')">
+            <span class="loc-emoji">🫧</span>
+            <div class="loc-name">Bubble Cove</div>
+            <div class="loc-done" id="done-bubble-pop"></div>
+        </div>
+        <div class="map-location" id="loc-memory" onclick="launchGame('memory')">
+            <span class="loc-emoji">🃏</span>
+            <div class="loc-name">Memory Reef</div>
+            <div class="loc-done" id="done-memory"></div>
+        </div>
+        <div class="map-location" id="loc-treasure" onclick="launchGame('treasure')">
+            <span class="loc-emoji">🗺️</span>
+            <div class="loc-name">Treasure Cave</div>
+            <div class="loc-done" id="done-treasure"></div>
+        </div>
+        <div class="map-location" id="loc-music" onclick="launchGame('music')">
+            <span class="loc-emoji">🎵</span>
+            <div class="loc-name">Music Shell</div>
+            <div class="loc-done" id="done-music"></div>
+        </div>
+    </div>
+    <button class="btn btn-purple" onclick="openDressup(true)" style="margin-top:5px; padding:11px 22px; font-size:1rem;">
+        👗 Change Outfit
+    </button>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 6 — BUBBLE POP
+═══════════════════════════════════════ -->
+<div id="screen-bubble-pop" class="screen" style="padding:0;">
+    <div id="bubble-pop-area"></div>
+    <div class="game-hud">
+        <div class="hud-box">🏆 <span id="bscore">0</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <div class="prog-outer"><div class="prog-inner" id="bprog" style="width:0%"></div></div>
+            <span style="color:white;font-size:.8rem;">Collect <span id="bgoal">15</span> treasures!</span>
+        </div>
+        <button class="hud-box hud-btn" onclick="endGame('bubble-pop')">🏠</button>
+    </div>
+    <div style="position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:20;">
+        <div style="background:rgba(0,0,0,.3);border-radius:20px;padding:6px 18px;">
+            <p style="color:white;font-size:.95rem;">Tap the bubbles! 🫧</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 7 — MEMORY MATCH
+═══════════════════════════════════════ -->
+<div id="screen-memory" class="screen">
+    <button class="back-btn" onclick="endGame('memory')">🏠</button>
+    <h2 style="color:#FFD700; margin-top:calc(52px + env(safe-area-inset-top));">🐠 Memory Reef 🐠</h2>
+    <p id="mem-status" style="margin-bottom:8px;">Find all the matching pairs!</p>
+    <div id="memory-grid" class="memory-grid"></div>
+    <div class="hud-box" style="margin-top:10px;">Pairs: <span id="mpairs">0</span> / 6</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 8 — TREASURE HUNT
+═══════════════════════════════════════ -->
+<div id="screen-treasure" class="screen" style="padding:0;">
+    <div id="treasure-scene"></div>
+    <div class="game-hud">
+        <div class="hud-box">💎 <span id="tfound">0</span> / 6</div>
+        <div class="speech-bubble" id="thint" style="font-size:.82rem;padding:6px 13px;max-width:175px;">Tap where it glows! ✨</div>
+        <button class="hud-box hud-btn" onclick="endGame('treasure')">🏠</button>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 9 — MUSIC GAME
+═══════════════════════════════════════ -->
+<div id="screen-music" class="screen">
+    <button class="back-btn" onclick="endGame('music')">🏠</button>
+    <h2 style="color:#FFD700; margin-top:calc(52px + env(safe-area-inset-top));">🎵 Music Shell 🎵</h2>
+    <p style="margin-bottom:5px;">Tap the sea friends to make music!</p>
+    <div class="music-stage" id="music-stage"></div>
+    <div style="margin:10px 0; text-align:center;">
+        <button class="btn btn-gold"   onclick="playSharkSong()" id="song-btn" style="margin:5px;">🦈 Baby Shark Song!</button>
+        <button class="btn btn-purple" onclick="endGame('music')" style="margin:5px; padding:11px 20px; font-size:.95rem;">🏠 Go Home</button>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 10 — WIN
+═══════════════════════════════════════ -->
+<div id="screen-win" class="screen">
+    <div class="card" style="text-align:center;">
+        <div id="win-stars">⭐⭐⭐</div>
+        <h1 style="margin:5px 0;">Amazing! 🎉</h1>
+        <div class="shark-wrap">
+            <svg class="baby-shark" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg" style="animation-duration:.55s;">
+                <ellipse cx="115" cy="85" rx="80" ry="50" fill="#5BC8F5"/>
+                <polygon points="35,85 8,58 8,112" fill="#4AB4E0"/>
+                <polygon points="100,35 138,36 120,62" fill="#4AB4E0"/>
+                <ellipse cx="128" cy="97" rx="50" ry="27" fill="#E8F9FF"/>
+                <ellipse cx="90" cy="95" rx="25" ry="13" fill="#4AB4E0" transform="rotate(-60 90 95)"/>
+                <circle cx="165" cy="74" r="14" fill="white"/>
+                <circle cx="168" cy="74" r="9" fill="#1a1a2e"/>
+                <circle cx="171" cy="71" r="3.5" fill="white"/>
+                <path d="M145,96 Q165,110 183,96" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <ellipse cx="176" cy="86" rx="9" ry="5.5" fill="#FFB3BA" opacity=".65"/>
+                <polygon points="130,38 137,25 144,38 151,25 158,38" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+            </svg>
+        </div>
+        <p id="win-msg" style="font-size:1.1rem; margin:5px 0;"></p>
+        <div style="display:flex; gap:11px; justify-content:center; flex-wrap:wrap; margin-top:11px;">
+            <button class="btn btn-pink"   onclick="playAgain()" style="padding:12px 20px;">🎮 Again!</button>
+            <button class="btn btn-blue"   onclick="goHome()"    style="padding:12px 20px;">🗺️ Map</button>
+            <button class="btn btn-purple" onclick="openDressup(true)" style="padding:12px 20px;">👗 Outfit</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ── STATE ─────────────────────────────────────────────────────
+const S = {
+    name: '', style:{ crown:1, color:'#FF69B4', acc:'wand' },
+    done:{}, current:null, retries:0
+};
+const MAX_RETRIES = 3;
+const FALLBACK = ['Starfish','Pearl','Coral','Marina','Aurora','Rosie'];
+
+// ── SCREEN TRANSITIONS ────────────────────────────────────────
+function showScreen(id) {
+    const next = document.getElementById(id);
+    const cur  = document.querySelector('.screen.active');
+    if (cur === next) return;
+    if (cur) {
+        cur.classList.remove('fade-in');
+        setTimeout(() => cur.classList.remove('active'), 300);
+    }
+    next.classList.add('active');
+    requestAnimationFrame(() => requestAnimationFrame(() => next.classList.add('fade-in')));
+}
+
+// ── AUDIO ─────────────────────────────────────────────────────
+let _ctx = null;
+function ctx() {
+    if (!_ctx) _ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_ctx.state === 'suspended') _ctx.resume();
+    return _ctx;
+}
+// iOS requires AudioContext to be created on a user gesture
+document.addEventListener('touchstart', () => ctx(), { once:true });
+
+function tone(freq, dur, type='sine', vol=0.3, delay=0) {
+    try {
+        const c=ctx(), o=c.createOscillator(), g=c.createGain();
+        o.connect(g); g.connect(c.destination);
+        o.type=type;
+        o.frequency.setValueAtTime(freq, c.currentTime+delay);
+        g.gain.setValueAtTime(vol, c.currentTime+delay);
+        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime+delay+dur);
+        o.start(c.currentTime+delay); o.stop(c.currentTime+delay+dur);
+    } catch(e){}
+}
+function sfxPop() {
+    try {
+        const c=ctx(), o=c.createOscillator(), g=c.createGain();
+        o.connect(g); g.connect(c.destination); o.type='sine';
+        o.frequency.setValueAtTime(900+Math.random()*400, c.currentTime);
+        o.frequency.exponentialRampToValueAtTime(180, c.currentTime+.15);
+        g.gain.setValueAtTime(.4, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(.001, c.currentTime+.15);
+        o.start(); o.stop(c.currentTime+.15);
+    } catch(e){}
+}
+function sfxSparkle() { [1047,1319,1568,2093].forEach((f,i)=>tone(f,.2,'sine',.2,i*.08)); }
+function sfxFanfare()  { const m=[523,659,784,1047,784,1047,1319],d=[.2,.2,.2,.4,.2,.2,.55]; let t=0; m.forEach((f,i)=>{tone(f,d[i],'triangle',.4,t);t+=d[i]*.9;}); }
+function sfxFlip()     { tone(440,.1,'square',.14); }
+function sfxMatch()    { tone(784,.14,'sine',.3); tone(1047,.18,'sine',.3,.14); tone(1319,.24,'sine',.3,.28); }
+function sfxError()    { tone(220,.25,'sawtooth',.18); }
+function sfxTreasure() { tone(659,.14,'sine',.3); tone(784,.14,'sine',.3,.12); tone(1047,.28,'sine',.3,.24); }
+function sfxClick()    { tone(660,.08,'sine',.18); }
+
+// Note frequencies
+const N = { c4:261.63, e4:329.63, g4:392, a4:440, b4:493.88, c5:523.25 };
+
+// ── SPEECH (Baby Shark's voice) ───────────────────────────────
+let synthTimer = null;
+function speak(text, cb) {
+    if (!window.speechSynthesis) { if(cb) cb(); return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate=.88; u.pitch=1.35; u.volume=1;
+    const vs = speechSynthesis.getVoices();
+    const v  = vs.find(v=>/Samantha|Karen/i.test(v.name))
+            || vs.find(v=>/en-US/i.test(v.lang)&&/female/i.test(v.name))
+            || vs.find(v=>/en-US/i.test(v.lang));
+    if (v) u.voice = v;
+
+    document.querySelectorAll('.screen.active .baby-shark').forEach(el=>el.classList.add('shark-talking'));
+
+    // iOS Safari fix: speechSynthesis can pause itself — keep it alive
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        clearInterval(synthTimer);
+        synthTimer = setInterval(()=>{ if (speechSynthesis.paused) speechSynthesis.resume(); }, 250);
+    }
+    const done = () => {
+        clearInterval(synthTimer);
+        document.querySelectorAll('.baby-shark').forEach(el=>el.classList.remove('shark-talking'));
+        if (cb) cb();
+    };
+    u.onend=done; u.onerror=done;
+    speechSynthesis.speak(u);
+}
+// Pre-load voices (they load asynchronously on some browsers)
+if (window.speechSynthesis) {
+    speechSynthesis.getVoices();
+    speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+}
+
+// ── SPEECH RECOGNITION (Name Entry) ──────────────────────────
+let recog=null, isListening=false;
+
+function initRecog() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return false;
+    recog = new SR();
+    recog.lang='en-US'; recog.continuous=false; recog.interimResults=false; recog.maxAlternatives=3;
+    recog.onstart = () => {
+        isListening=true;
+        document.getElementById('mic-btn').classList.add('listening');
+        document.getElementById('listen-status').textContent='Listening… 🎤';
+    };
+    recog.onresult = e => {
+        isListening=false;
+        document.getElementById('mic-btn').classList.remove('listening');
+        const name = cap(e.results[0][0].transcript.trim().split(' ')[0]);
+        showConfirm(name);
+    };
+    recog.onerror = () => {
+        isListening=false;
+        document.getElementById('mic-btn').classList.remove('listening');
+        document.getElementById('listen-status').textContent='';
+        retryOrGiveUp();
+    };
+    recog.onend = () => {
+        isListening=false;
+        document.getElementById('mic-btn').classList.remove('listening');
+    };
+    return true;
+}
+
+function startListening() {
+    ctx(); // unlock audio on tap (required by iOS)
+    if (!recog && !initRecog()) { giveUpName(); return; }
+    if (isListening) return;
+    try { recog.start(); }
+    catch(e) { recog.stop(); setTimeout(startListening, 600); }
+}
+
+function retryOrGiveUp() {
+    S.retries++;
+    if (S.retries >= MAX_RETRIES) { giveUpName(); return; }
+    speak("Oops, I didn't hear you! Can you say your name again?", ()=>setTimeout(startListening,500));
+}
+
+function giveUpName() {
+    const n = FALLBACK[Math.floor(Math.random()*FALLBACK.length)];
+    speak(`I'll call you Princess ${n}! Let's go on an adventure!`, ()=>{
+        S.name=n; S.retries=0; openDressup(false);
+    });
+}
+
+function showConfirm(name) {
+    document.getElementById('heard-name').textContent = name;
+    showScreen('screen-name-confirm');
+    speak(`I heard… ${name}! Is that right?`);
+}
+
+function confirmName(yes) {
+    if (yes) {
+        S.name = document.getElementById('heard-name').textContent;
+        S.retries=0; sfxSparkle();
+        speak(`Wonderful! Hello Princess ${S.name}! Let's get you dressed for adventure!`, ()=>openDressup(false));
+    } else {
+        showScreen('screen-name-entry');
+        speak("Let's try again! What's your name, Princess?", ()=>setTimeout(startListening,500));
+    }
+}
+
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase(); }
+
+// ── FLOW ──────────────────────────────────────────────────────
+function beginAdventure() {
+    ctx();
+    showScreen('screen-name-entry');
+    speak("What's your name, Princess?", ()=>setTimeout(startListening,400));
+}
+
+function openDressup(fromMap) {
+    document.getElementById('dressup-title').textContent = `👑 Get Dressed, Princess ${S.name}!`;
+    document.getElementById('dressup-back').style.display = fromMap ? 'flex' : 'none';
+    updatePrincess();
+    showScreen('screen-dressup');
+}
+
+function proceedToMap() {
+    sfxSparkle();
+    document.getElementById('map-greeting').textContent = `🌊 Where to, Princess ${S.name}? 🌊`;
+    updateMapDone();
+    showScreen('screen-map');
+    speak(`You look amazing, Princess ${S.name}! Where shall we go?`);
+}
+
+function goHome() { updateMapDone(); showScreen('screen-map'); }
+
+function updateMapDone() {
+    ['bubble-pop','memory','treasure','music'].forEach(g=>{
+        const loc  = document.getElementById('loc-'+g);
+        const done = document.getElementById('done-'+g);
+        if (!loc||!done) return;
+        if (S.done[g]) { done.textContent='⭐'; loc.classList.add('done'); }
+        else           { done.textContent='';  loc.classList.remove('done'); }
+    });
+}
+
+// ── DRESS-UP ──────────────────────────────────────────────────
+function selectCrown(n,btn) {
+    document.querySelectorAll('[data-crown]').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected'); S.style.crown=n; updatePrincess(); sfxClick();
+}
+function selectColor(c,btn) {
+    document.querySelectorAll('[data-color]').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected'); S.style.color=c; updatePrincess(); sfxClick();
+}
+function selectAcc(a,btn) {
+    document.querySelectorAll('[data-acc]').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected'); S.style.acc=a; updatePrincess(); sfxClick();
+}
+
+const CROWN_SVG = {
+    1:`<polygon points="58,57 64,40 70,54 80,37 90,54 96,40 102,57" fill="#FFD700" stroke="#FFA500" stroke-width="2"/>
+       <circle cx="64" cy="43" r="4" fill="#FF69B4"/><circle cx="80" cy="38" r="5" fill="#9B59B6"/><circle cx="96" cy="43" r="4" fill="#FF69B4"/>`,
+    2:`<path d="M56,57 L62,43 L70,52 L80,36 L90,52 L98,43 L104,57 Z" fill="#B8D4F0" stroke="#87CEEB" stroke-width="2"/>
+       <circle cx="80" cy="34" r="6" fill="#00BFFF"/><circle cx="64" cy="48" r="4" fill="#87CEEB"/><circle cx="96" cy="48" r="4" fill="#87CEEB"/>
+       <polygon points="80,31 82,25 84,31 90,29 86,33 88,40 80,36 72,40 74,33 70,29" fill="white" opacity=".7"/>`,
+    3:`<polygon points="56,57 62,41 70,55 80,34 90,55 98,41 104,57" fill="#FFD700"/>
+       <polygon points="80,31 82,24 84,31 91,29 87,33 89,41 80,37 71,41 73,33 69,29" fill="#FFD700"/>
+       <circle cx="80" cy="34" r="3.5" fill="white" opacity=".9"/>
+       <circle cx="64" cy="43" r="3" fill="white" opacity=".75"/><circle cx="96" cy="43" r="3" fill="white" opacity=".75"/>`
+};
+
+function updatePrincess() {
+    const {crown,color,acc} = S.style;
+    const d=document.getElementById('p-dress'), d2=document.getElementById('p-dress2');
+    if(d)  d.setAttribute('fill',color);
+    if(d2) d2.setAttribute('fill',lighten(color));
+    const ce=document.getElementById('p-crown');
+    if(ce) ce.innerHTML=CROWN_SVG[crown]||CROWN_SVG[1];
+    const ae=document.getElementById('p-accessory');
+    if(ae) ae.innerHTML = {
+        wand:    `<line x1="122" y1="112" x2="142" y2="92" stroke="#8B4513" stroke-width="4" stroke-linecap="round"/>
+                  <polygon points="132,74 135,82 143,82 137,87 139,95 132,90 125,95 127,87 121,82 129,82" fill="#FFD700"/>
+                  <circle cx="132" cy="84" r="3.5" fill="white" opacity=".8"/>`,
+        necklace:`<path d="M64,109 Q80,120 96,109" stroke="#FFD700" stroke-width="3" fill="none" stroke-linecap="round"/>
+                  <circle cx="80" cy="116" r="7" fill="#9B59B6"/><circle cx="80" cy="116" r="3.5" fill="#DA70D6"/>`,
+        shield:  `<path d="M24,102 Q18,90 24,114 Q34,134 45,138 Q40,120 36,106 Z" fill="${color}" stroke="#FFD700" stroke-width="2"/>
+                  <polygon points="32,110 34,104 36,110 42,110 38,114 40,120 32,115 24,120 26,114 22,110" fill="#FFD700" opacity=".85"/>`
+    }[acc] || '';
+}
+
+function lighten(hex) {
+    if (!hex.startsWith('#')) return hex;
+    const n=parseInt(hex.slice(1),16);
+    const r=Math.min(255,((n>>16)&255)+50), g=Math.min(255,((n>>8)&255)+50), b=Math.min(255,(n&255)+50);
+    return `rgb(${r},${g},${b})`;
+}
+
+// ── SPARKLE FX ────────────────────────────────────────────────
+function sparkleAt(x, y, n=5) {
+    const em=['✨','⭐','💫','🌟','💎','🌸'];
+    for(let i=0;i<n;i++) setTimeout(()=>{
+        const el=document.createElement('div');
+        el.className='sparkle';
+        el.textContent=em[Math.floor(Math.random()*em.length)];
+        el.style.left=(x+(Math.random()-.5)*60-12)+'px';
+        el.style.top =(y+(Math.random()-.5)*60-12)+'px';
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(),1000);
+    },i*90);
+}
+
+function launchConfetti() {
+    const colors=['#FF69B4','#9B59B6','#FFD700','#00B4D8','#2ECC71','#FF1493','#FFA500'];
+    for(let i=0;i<70;i++) setTimeout(()=>{
+        const el=document.createElement('div');
+        el.className='confetti-piece';
+        const sz=5+Math.random()*10, round=Math.random()>.5;
+        el.style.cssText=`width:${sz}px;height:${sz}px;background:${colors[Math.floor(Math.random()*colors.length)]};`+
+            `border-radius:${round?'50%':'2px'};left:${Math.random()*100}vw;top:-20px;`+
+            `animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*.5}s;`;
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(),3200);
+    },i*40);
+}
+
+// ── GAME LAUNCHER ─────────────────────────────────────────────
+function launchGame(g) {
+    S.current=g;
+    ({  'bubble-pop': initBubblePop,
+        'memory':     initMemory,
+        'treasure':   initTreasure,
+        'music':      initMusic   }[g] || (()=>{}))();
+}
+function endGame(g) {
+    if(g==='bubble-pop') stopBubbles();
+    if(g==='treasure')   stopTreasure();
+    showScreen('screen-map');
+}
+function playAgain() { if(S.current) launchGame(S.current); else goHome(); }
+
+// ── GAME 1: BUBBLE POP ───────────────────────────────────────
+let bubTimer=null, bScore=0;
+const B_GOAL=15;
+const B_ITEMS=['💎','👑','⭐','🌟','🐚','🌸','🦋','🐠','🌊','🐡'];
+
+function initBubblePop() {
+    bScore=0;
+    document.getElementById('bscore').textContent='0';
+    document.getElementById('bgoal').textContent=B_GOAL;
+    document.getElementById('bprog').style.width='0%';
+    document.getElementById('bubble-pop-area').innerHTML='';
+    showScreen('screen-bubble-pop');
+    speak(`Pop the bubbles and collect treasures, Princess ${S.name}!`);
+    for(let i=0;i<4;i++) setTimeout(spawnBubble,i*260);
+    bubTimer=setInterval(spawnBubble,1050);
+}
+function spawnBubble() {
+    const area=document.getElementById('bubble-pop-area'); if(!area) return;
+    const sz=56+Math.random()*54, x=Math.random()*(window.innerWidth-sz-14)+7;
+    const dur=5+Math.random()*5, drift=(Math.random()-.5)*90;
+    const item=B_ITEMS[Math.floor(Math.random()*B_ITEMS.length)];
+    const b=document.createElement('div');
+    b.className='game-bubble';
+    b.style.cssText=`width:${sz}px;height:${sz}px;left:${x}px;bottom:-${sz}px;font-size:${sz*.42}px;animation-duration:${dur}s;--drift:${drift}px;`;
+    b.textContent=item;
+    const pop=e=>{e.preventDefault();doPop(b);};
+    b.addEventListener('click',pop);
+    b.addEventListener('touchstart',pop,{passive:false});
+    area.appendChild(b);
+    setTimeout(()=>b.parentNode&&b.remove(),dur*1000);
+}
+function doPop(b) {
+    if(!b.parentNode) return;
+    const r=b.getBoundingClientRect(); b.remove(); sfxPop();
+    sparkleAt(r.left+r.width/2,r.top+r.height/2,3);
+    bScore++;
+    document.getElementById('bscore').textContent=bScore;
+    document.getElementById('bprog').style.width=(bScore/B_GOAL*100)+'%';
+    if(bScore>=B_GOAL){ stopBubbles(); showWin('bubble-pop'); }
+}
+function stopBubbles() {
+    clearInterval(bubTimer); bubTimer=null;
+    const a=document.getElementById('bubble-pop-area'); if(a) a.innerHTML='';
+}
+
+// ── GAME 2: MEMORY MATCH ─────────────────────────────────────
+const MEM_EM=['🦈','👑','💎','🌊','🐠','🐙'];
+let mFlipped=[], mLocked=false, mPairs=0, mPeeking=false;
+
+function initMemory() {
+    mFlipped=[]; mLocked=false; mPairs=0; mPeeking=false;
+    document.getElementById('mpairs').textContent='0';
+    document.getElementById('mem-status').textContent='Get ready…';
+    const cards=shuffle([...MEM_EM,...MEM_EM]);
+    const grid=document.getElementById('memory-grid');
+    grid.innerHTML=''; grid.style.gridTemplateColumns='repeat(4,1fr)';
+    cards.forEach((em,i)=>{
+        const c=document.createElement('div');
+        c.className='memory-card'; c.dataset.em=em; c.dataset.i=i;
+        c.innerHTML=`<div class="mem-inner"><div class="mem-front">🌊</div><div class="mem-back">${em}</div></div>`;
+        const fn=e=>{e.preventDefault();flipCard(c);};
+        c.addEventListener('click',fn);
+        c.addEventListener('touchstart',fn,{passive:false});
+        grid.appendChild(c);
+    });
+    showScreen('screen-memory');
+    // Brief peek — show all cards for 2 seconds so child can start learning positions
+    speak(`Ready? Take a look at the cards!`, ()=>{
+        mPeeking=true; mLocked=true;
+        document.querySelectorAll('.memory-card').forEach(c=>c.classList.add('flipped'));
+        setTimeout(()=>{
+            document.querySelectorAll('.memory-card').forEach(c=>c.classList.remove('flipped'));
+            mPeeking=false; mLocked=false;
+            document.getElementById('mem-status').textContent='Now find the matching pairs!';
+            speak(`Now find the matching pairs!`);
+        },2200);
+    });
+}
+function flipCard(card) {
+    if(mLocked||card.classList.contains('flipped')||card.classList.contains('matched')||mFlipped.length>=2) return;
+    card.classList.add('flipped'); sfxFlip(); mFlipped.push(card);
+    if(mFlipped.length===2){ mLocked=true; checkMatch(); }
+}
+function checkMatch() {
+    const [a,b]=mFlipped;
+    if(a.dataset.em===b.dataset.em) {
+        sfxMatch();
+        const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
+        sparkleAt((ra.left+rb.left)/2+40,(ra.top+rb.top)/2+40,4);
+        setTimeout(()=>{
+            a.classList.add('matched'); b.classList.add('matched');
+            mFlipped=[]; mLocked=false; mPairs++;
+            document.getElementById('mpairs').textContent=mPairs;
+            if(mPairs===MEM_EM.length) setTimeout(()=>showWin('memory'),600);
+        },400);
+    } else {
+        sfxError();
+        a.classList.add('shake'); b.classList.add('shake');
+        setTimeout(()=>{
+            a.classList.remove('flipped','shake'); b.classList.remove('flipped','shake');
+            mFlipped=[]; mLocked=false;
+        },950);
+    }
+}
+
+// ── GAME 3: TREASURE HUNT ────────────────────────────────────
+const T_ITEMS=['💎','👑','🏆','🔮','🌟','💍'];
+const T_HINTS=[
+    'Look near the seaweed on the left! 🌿',
+    'Something shiny is near the top! ✨',
+    'Check the coral on the right! 🪸',
+    'Try the sandy bottom! 🏖️',
+    'It is hiding in the middle! 🔍',
+    'Sparkling near the surface! 💫'
+];
+const T_POS=[
+    {l:'14%',t:'33%'},{l:'68%',t:'22%'},{l:'44%',t:'62%'},
+    {l:'22%',t:'72%'},{l:'74%',t:'57%'},{l:'50%',t:'38%'}
+];
+let tFound=0, tHintIdx=0, tTimer=null;
+
+function initTreasure() {
+    tFound=0; tHintIdx=0;
+    document.getElementById('tfound').textContent='0';
+    const scene=document.getElementById('treasure-scene');
+    scene.innerHTML=`
+        <div style="position:absolute;bottom:0;left:0;right:0;height:28%;background:linear-gradient(transparent,rgba(0,40,90,.5));pointer-events:none;"></div>
+        <div style="position:absolute;bottom:0;left:4%;font-size:clamp(2rem,6vw,4rem);pointer-events:none;">🌿</div>
+        <div style="position:absolute;bottom:0;left:24%;font-size:clamp(1.5rem,5vw,3rem);pointer-events:none;">🪸</div>
+        <div style="position:absolute;bottom:0;right:8%;font-size:clamp(2rem,6vw,4rem);pointer-events:none;">🌿</div>
+        <div style="position:absolute;bottom:0;right:28%;font-size:clamp(1.5rem,4vw,2.5rem);pointer-events:none;">🪨</div>
+        <div style="position:absolute;top:12%;left:8%;font-size:clamp(1rem,3vw,2rem);pointer-events:none;opacity:.45;animation:bgRise 8s ease-in-out infinite;">🐟</div>
+        <div style="position:absolute;top:22%;right:14%;font-size:clamp(1rem,3vw,2rem);pointer-events:none;opacity:.45;">🐠</div>
+        <div style="position:absolute;top:50%;left:6%;font-size:clamp(1rem,3vw,2rem);pointer-events:none;opacity:.55;">🐡</div>
+        <div style="position:absolute;bottom:18%;right:6%;font-size:clamp(1.5rem,4vw,2.5rem);pointer-events:none;opacity:.55;">⭐</div>
+        <div style="position:absolute;top:35%;right:35%;font-size:clamp(1rem,3vw,2rem);pointer-events:none;opacity:.4;">🐙</div>`;
+    T_ITEMS.forEach((item,i)=>{
+        const lc=`calc(${T_POS[i].l} - 35px)`, tc=`calc(${T_POS[i].t} - 35px)`;
+        const hint=document.createElement('div');
+        hint.className='t-hint'; hint.id=`th-${i}`;
+        hint.style.cssText=`left:${lc};top:${tc};width:70px;height:70px;`;
+        const spot=document.createElement('div');
+        spot.className='treasure-spot hidden'; spot.id=`ts-${i}`; spot.textContent=item;
+        spot.style.cssText=`left:${lc};top:${tc};`;
+        const tz=document.createElement('div');
+        tz.className='tap-zone';
+        tz.style.cssText=`left:calc(${T_POS[i].l} - 40px);top:calc(${T_POS[i].t} - 40px);`;
+        const fn=e=>{e.preventDefault();foundTreasure(i);};
+        tz.addEventListener('click',fn); tz.addEventListener('touchstart',fn,{passive:false});
+        scene.appendChild(hint); scene.appendChild(spot); scene.appendChild(tz);
+    });
+    showScreen('screen-treasure');
+    speak(`Help me find the hidden treasures, Princess ${S.name}! Tap where the circles are glowing!`);
+    tTimer=setInterval(()=>{
+        const el=document.getElementById('thint');
+        if(el) el.textContent=T_HINTS[tHintIdx++%T_HINTS.length];
+    },4000);
+}
+function foundTreasure(i) {
+    const spot=document.getElementById(`ts-${i}`), hint=document.getElementById(`th-${i}`);
+    if(!spot||spot.classList.contains('found')) return;
+    spot.classList.remove('hidden'); spot.classList.add('found');
+    if(hint) hint.style.display='none';
+    sfxTreasure();
+    const r=spot.getBoundingClientRect(); sparkleAt(r.left+35,r.top+35,5);
+    tFound++; document.getElementById('tfound').textContent=tFound;
+    if(tFound>=T_ITEMS.length){ stopTreasure(); setTimeout(()=>showWin('treasure'),800); }
+}
+function stopTreasure() { clearInterval(tTimer); tTimer=null; }
+
+// ── GAME 4: MUSIC ────────────────────────────────────────────
+const SEA=['🦈','🐠','🐙','🦀','🐡'];
+const SEA_NAMES=['Baby\nShark','Coral\nFish','Octavia','Mr.\nCrab','Puffer'];
+const SEA_NOTES=[N.c4, N.e4, N.g4, N.b4, N.c5];
+
+// Baby Shark melody: C C C E C | C C C E C | C C C E C G
+const SHARK_SONG=[
+    {c:0,d:180},{c:0,d:180},{c:0,d:180},{c:1,d:180},{c:0,d:380},
+    {c:0,d:180},{c:0,d:180},{c:0,d:180},{c:1,d:180},{c:0,d:380},
+    {c:0,d:180},{c:0,d:180},{c:0,d:180},{c:1,d:180},{c:0,d:180},{c:2,d:500}
+];
+let songPlaying=false;
+
+function initMusic() {
+    songPlaying=false;
+    const stage=document.getElementById('music-stage'); stage.innerHTML='';
+    SEA.forEach((em,i)=>{
+        const el=document.createElement('div'); el.className='music-char'; el.id=`mc-${i}`;
+        el.innerHTML=`<div class="music-emoji" id="me-${i}">${em}</div><div class="music-name">${SEA_NAMES[i]}</div>`;
+        const fn=e=>{e.preventDefault();playChar(i);};
+        el.addEventListener('click',fn); el.addEventListener('touchstart',fn,{passive:false});
+        stage.appendChild(el);
+    });
+    showScreen('screen-music');
+    const btn=document.getElementById('song-btn'); if(btn) btn.disabled=false;
+    speak(`Tap the sea friends to make music, Princess ${S.name}! Or press the Baby Shark button!`);
+}
+function playChar(i) {
+    if(songPlaying) return;
+    tone(SEA_NOTES[i],.5,'sine',.5);
+    const el=document.getElementById(`me-${i}`);
+    if(el){ el.classList.add('lit'); setTimeout(()=>el.classList.remove('lit'),500); }
+}
+function playSharkSong() {
+    if(songPlaying) return;
+    songPlaying=true;
+    const btn=document.getElementById('song-btn'); if(btn) btn.disabled=true;
+    let delay=0;
+    SHARK_SONG.forEach(step=>{
+        setTimeout(()=>{
+            tone(SEA_NOTES[step.c],step.d/1000,'sine',.5);
+            const el=document.getElementById(`me-${step.c}`);
+            if(el){ el.classList.add('lit'); setTimeout(()=>el.classList.remove('lit'),step.d*.8); }
+        },delay);
+        delay+=step.d*.9;
+    });
+    setTimeout(()=>{ songPlaying=false; if(btn) btn.disabled=false; },delay+500);
+}
+
+// ── WIN ───────────────────────────────────────────────────────
+function showWin(game) {
+    S.done[game]=true; sfxFanfare(); launchConfetti();
+    const msg={
+        'bubble-pop':`You collected all the treasures, Princess ${S.name}! 🫧🎉`,
+        'memory':    `Amazing memory, Princess ${S.name}! You matched them all! 🧠✨`,
+        'treasure':  `You found all the hidden treasures, Princess ${S.name}! 💎🏆`,
+        'music':     `Beautiful music, Princess ${S.name}! 🎵🌟`
+    }[game]||`Well done, Princess ${S.name}! 🎉`;
+    document.getElementById('win-msg').textContent=msg;
+    showScreen('screen-win');
+    speak(msg);
+    for(let i=0;i<6;i++) setTimeout(()=>sparkleAt(Math.random()*window.innerWidth,Math.random()*window.innerHeight*.6,4),i*320);
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+// ── OCEAN BACKGROUND ─────────────────────────────────────────
+(function(){
+    const bg=document.getElementById('ocean-bg');
+    for(let i=0;i<20;i++){
+        const b=document.createElement('div'); b.className='bg-bubble';
+        const sz=8+Math.random()*32;
+        b.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;animation-duration:${9+Math.random()*14}s;animation-delay:${Math.random()*12}s;`;
+        bg.appendChild(b);
+    }
+    // Fade in welcome screen on load
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        const ws=document.getElementById('screen-welcome');
+        if(ws) ws.classList.add('fade-in');
+    }));
+})();
+</script>
+</body>
+</html>
