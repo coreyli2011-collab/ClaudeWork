@@ -374,21 +374,40 @@
 </div>
 
 <!-- ═══════════════════════════════════════
-     SCREEN — NAME PICKER (no microphone)
+     SCREEN — SWITCH PRINCESS (no microphone)
 ═══════════════════════════════════════ -->
-<div id="screen-name-picker" class="screen">
-    <h2 style="color:#FFD700; margin-bottom:4px;">👑 Who is playing today? 👑</h2>
-    <p style="margin-bottom:4px; opacity:.85;">Tap your name!</p>
-    <div class="name-grid" id="name-grid"></div>
-    <div class="custom-name-row">
-        <input class="custom-name-input" id="custom-name-input" type="text"
-               placeholder="Other name…" maxlength="20"
-               onkeydown="if(event.key==='Enter') useCustomName()"/>
-        <button class="btn btn-gold" onclick="useCustomName()" style="padding:12px 20px; font-size:1rem;">OK</button>
+<div id="screen-switch" class="screen">
+    <div class="card" style="text-align:center;">
+        <div class="shark-wrap">
+            <svg class="baby-shark" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="115" cy="85" rx="80" ry="50" fill="#5BC8F5"/>
+                <polygon points="35,85 8,58 8,112" fill="#4AB4E0"/>
+                <polygon points="100,35 138,36 120,62" fill="#4AB4E0"/>
+                <ellipse cx="128" cy="97" rx="50" ry="27" fill="#E8F9FF"/>
+                <ellipse cx="90" cy="115" rx="25" ry="13" fill="#4AB4E0" transform="rotate(-25 90 115)"/>
+                <circle cx="165" cy="74" r="14" fill="white"/>
+                <circle cx="168" cy="74" r="9" fill="#1a1a2e"/>
+                <circle cx="171" cy="71" r="3.5" fill="white"/>
+                <path d="M148,98 Q168,110 185,98" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <ellipse cx="176" cy="88" rx="9" ry="5.5" fill="#FFB3BA" opacity=".65"/>
+                <polygon points="130,38 137,25 144,38 151,25 158,38" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+            </svg>
+        </div>
+        <div class="speech-bubble">Who's playing today? 👑<br><span style="font-size:.85em; color:#888;">A grown-up can type the name below!</span></div>
+        <br>
+        <div style="display:flex; gap:10px; width:100%; margin-top:4px;">
+            <input id="switch-name-input" type="text"
+                   style="flex:1; padding:14px 18px; border-radius:50px; border:3px solid rgba(255,255,255,.5);
+                          background:rgba(255,255,255,.25); color:white; font-family:inherit; font-size:1.2rem;
+                          outline:none; -webkit-appearance:none;"
+                   placeholder="Type name here…" maxlength="20"
+                   onkeydown="if(event.key==='Enter') confirmSwitch()"/>
+            <button class="btn btn-gold" onclick="confirmSwitch()" style="padding:14px 20px; font-size:1.1rem;">OK</button>
+        </div>
+        <button class="btn btn-purple" onclick="showScreen('screen-returning')" style="width:100%; margin-top:12px; font-size:1rem; padding:12px;">
+            ← Back
+        </button>
     </div>
-    <button class="btn btn-purple" onclick="showScreen('screen-returning')" style="margin-top:14px; padding:11px 22px; font-size:.95rem;">
-        ← Back
-    </button>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -927,45 +946,21 @@ function returnToPlay() {
 }
 
 function changeName() {
-    S.name=''; S.retries=0;
-    showScreen('screen-name-entry');
-    speak("What's your name, Princess?", ()=>setTimeout(startListening,400));
+    // No microphone — parent types the new name
+    const input = document.getElementById('switch-name-input');
+    if (input) input.value = '';
+    showScreen('screen-switch');
+    speak("Who's playing today? Ask a grown-up to type the name!");
 }
 
-// Popular girl names shown as tap buttons
-const PRINCESS_NAMES = [
-    'Emma','Olivia','Sophia','Isabella','Mia','Charlotte',
-    'Amelia','Ella','Harper','Evelyn','Abigail','Emily',
-    'Elizabeth','Lily','Grace','Chloe','Victoria','Riley',
-    'Zoey','Nora','Hannah','Lucy','Sophie','Layla',
-    'Aurora','Ellie','Scarlett','Aria','Penelope','Stella'
-];
-
-function buildNameGrid() {
-    const grid = document.getElementById('name-grid');
-    grid.innerHTML = '';
-    PRINCESS_NAMES.forEach(n => {
-        const btn = document.createElement('button');
-        btn.className = 'name-btn';
-        btn.textContent = '👧 ' + n;
-        btn.addEventListener('click',    () => pickName(n));
-        btn.addEventListener('touchstart', e => { e.preventDefault(); pickName(n); }, { passive:false });
-        grid.appendChild(btn);
-    });
-}
-
-function pickName(name) {
-    S.name = name; saveName(); sfxSparkle();
-    speak(`Hello, Princess ${name}! Let's get you dressed!`, () => openDressup(false));
-}
-
-function useCustomName() {
-    const input = document.getElementById('custom-name-input');
-    const raw = (input.value || '').trim();
+function confirmSwitch() {
+    const input = document.getElementById('switch-name-input');
+    const raw = (input ? input.value : '').trim();
     if (!raw) return;
     const name = cap(raw);
     input.value = '';
-    pickName(name);
+    S.name = name; saveName(); sfxSparkle();
+    speak(`Hello, Princess ${name}! Let's get you dressed!`, () => openDressup(false));
 }
 
 function openDressup(fromMap) {
