@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emma &amp; Ellis Adventures — Setup Instructions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Bubblegum Sans','Comic Sans MS',cursive;
+      background:linear-gradient(135deg,#FF79B0,#9C27B0,#26C6DA);
+      min-height:100vh; padding:24px 16px 40px; color:white;
+    }
+    .container { max-width:540px; margin:0 auto; }
+
+    h1 { font-size:clamp(1.8rem,6vw,2.6rem); color:#FFD700;
+         text-shadow:2px 2px 0 rgba(0,0,0,.3); text-align:center; margin-bottom:6px; }
+    .subtitle { text-align:center; font-size:1.05rem; opacity:.88; margin-bottom:24px; }
+
+    .play-btn {
+      display:block; background:linear-gradient(135deg,#FF79B0,#9C27B0);
+      color:white; text-decoration:none; text-align:center; font-family:inherit;
+      font-size:1.5rem; padding:18px 24px; border-radius:50px;
+      box-shadow:0 7px 0 rgba(0,0,0,.25); margin-bottom:28px;
+      transition:transform .1s,box-shadow .1s;
+    }
+    .play-btn:active { transform:translateY(3px); box-shadow:0 4px 0 rgba(0,0,0,.25); }
+
+    .card {
+      background:rgba(255,255,255,.18); border:2px solid rgba(255,255,255,.35);
+      border-radius:20px; padding:20px; margin-bottom:16px;
+    }
+    .card h2 { font-size:1.15rem; color:#FFD700; margin-bottom:12px; }
+    .card p, .card li { font-size:.95rem; line-height:1.6; color:rgba(255,255,255,.92); }
+    ol, ul { padding-left:20px; }
+    ol li, ul li { margin-bottom:6px; }
+
+    .note {
+      background:rgba(255,215,0,.18); border:1px solid rgba(255,215,0,.45);
+      border-radius:12px; padding:12px 16px; font-size:.88rem;
+      color:rgba(255,255,255,.88); margin-top:10px;
+    }
+
+    .player-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0;
+    }
+    .player-chip {
+      border-radius:14px; padding:12px 8px; text-align:center;
+      font-family:inherit; font-size:.9rem; font-weight:bold; color:white;
+    }
+    .p-emma  { background:linear-gradient(135deg,#FF79B0,#FF4DA6); }
+    .p-ellis { background:linear-gradient(135deg,#4DD0E1,#00ACC1); }
+    .p-both  { background:linear-gradient(135deg,#FF79B0,#9C27B0,#26C6DA); grid-column:span 2; }
+    .p-guest { background:linear-gradient(135deg,#CE93D8,#9C27B0); grid-column:span 2; }
+
+    .footer { text-align:center; font-size:.8rem; opacity:.5; margin-top:24px; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>🌟 Emma &amp; Ellis Adventures! 🌟</h1>
+  <p class="subtitle">Frozen World &amp; Unicorn Kingdom &nbsp;·&nbsp; Ages 4–6</p>
+
+  <!-- PLAY BUTTON -->
+  <a class="play-btn" href="https://coreyli2011-collab.github.io/ClaudeWork/P-WebApps/emma-ellis-adventures/" target="_blank">
+    ❄️🦄 Tap Here to Play! 🦄❄️
+  </a>
+
+  <!-- IPHONE / IPAD SETUP -->
+  <div class="card">
+    <h2>📱 iPhone &amp; iPad Setup (do this once)</h2>
+    <ol>
+      <li>Tap <strong>"Tap Here to Play!"</strong> above — it opens in <strong>Safari</strong></li>
+      <li>Turn the <strong>volume up</strong> — the game talks to Emma and Ellis!</li>
+      <li>Make sure the <strong>silent switch is off</strong> (no orange stripe on the side)</li>
+      <li>That's it — no login, no download, just play! 🎉</li>
+    </ol>
+    <div class="note">
+      💡 <strong>Add to Home Screen</strong> for a shortcut icon:<br><br>
+      In Safari tap the <strong>Share button</strong> (box with arrow ↑) → scroll down →
+      <strong>"Add to Home Screen"</strong> → <strong>"Add"</strong>.<br>
+      An Emma &amp; Ellis icon (❄️🦄) appears on the home screen!
+    </div>
+  </div>
+
+  <!-- ANDROID / PC -->
+  <div class="card">
+    <h2>💻 Android &amp; PC (do this once)</h2>
+    <ol>
+      <li>Click <strong>"Tap Here to Play!"</strong> above — opens in your browser</li>
+      <li>Turn volume up before starting</li>
+      <li>Play! 🎮</li>
+    </ol>
+    <div class="note">
+      💡 On Android in Chrome: tap the <strong>three-dot menu → "Add to Home screen"</strong>
+      to get an icon shortcut.
+    </div>
+  </div>
+
+  <!-- WHO'S PLAYING -->
+  <div class="card">
+    <h2>👧 Who's Playing?</h2>
+    <p style="margin-bottom:10px;">Tap the right button on the player screen:</p>
+    <div class="player-grid">
+      <div class="player-chip p-emma">🌸 Emma</div>
+      <div class="player-chip p-ellis">❄️ Ellis</div>
+      <div class="player-chip p-both">🌸❄️ Emma &amp; Ellis Together!</div>
+      <div class="player-chip p-guest">⭐ Guest — grown-up types the name</div>
+    </div>
+    <p style="margin-top:8px;font-size:.88rem;opacity:.85;">
+      The game greets each player by name and personalises the celebration at the end.
+      Emma &amp; Ellis together means both names are called out throughout the game!
+    </p>
+  </div>
+
+  <!-- HOW TO PLAY -->
+  <div class="card">
+    <h2>🎮 How to Play</h2>
+    <ol>
+      <li>Tap <strong>"Let's Play!"</strong> on the title screen</li>
+      <li>Tap your name (Emma, Ellis, together, or Guest)</li>
+      <li>Choose a theme — <strong>Frozen World</strong> or <strong>Unicorn Kingdom</strong></li>
+      <li>Pick one of <strong>6 adventure worlds</strong> — tap a picture!
+        <ul style="margin-top:6px;">
+          <li><strong>Frozen:</strong> ❄️ Elsa's Palace · 🏰 Arendelle · 🏔️ North Mountain · ⛄ Olaf's Snowfield · 🌿 Enchanted Forest · 🌊 Frozen River</li>
+          <li><strong>Unicorn:</strong> 🏰 Corona Castle · 🦄 Unicorn Meadow · 🏮 Lantern Festival · 🌲 Magic Forest · 🌈 Rainbow Valley · 🌟 Starlight Kingdom</li>
+        </ul>
+      </li>
+      <li>The game <strong>says out loud what to find</strong> — tap the matching pictures!</li>
+      <li>Collect all 3 → <strong>stars light up</strong> → confetti celebration with their name! 🎊</li>
+    </ol>
+    <p style="margin-top:10px;">Everything is <strong>tap and listen</strong> — no reading needed! 👧</p>
+  </div>
+
+  <!-- GUEST PLAYERS -->
+  <div class="card">
+    <h2>⭐ Adding a Guest</h2>
+    <ol>
+      <li>On the player screen, tap <strong>⭐ Guest — Tap Here</strong></li>
+      <li>A text box appears: <em>"Grown-ups: type the guest name here"</em> — type the name and tap <strong>Done ✓</strong></li>
+      <li>The game greets the guest by name throughout!</li>
+    </ol>
+    <div class="note">
+      💡 Guest names are not saved between sessions — a parent types the name fresh each time.
+      This keeps it simple and private.
+    </div>
+  </div>
+
+  <!-- SOUND -->
+  <div class="card">
+    <h2>🔊 Voice &amp; Sound</h2>
+    <p>
+      The game speaks everything out loud using the device's built-in voice —
+      greetings, world descriptions, item names when tapped, and a personalised celebration.<br><br>
+      A <strong>🔊 mute button</strong> in the top-right corner silences the voice
+      at any time without stopping the game.
+    </p>
+  </div>
+
+  <!-- TIPS -->
+  <div class="card">
+    <h2>💡 Tips for Parents</h2>
+    <p>
+      🎭 <strong>Two themes, 6 worlds each</strong> — 12 worlds total, keeping it fresh for a while<br><br>
+      🔀 Each play <strong>randomly picks 3 items</strong> from a pool of 9, so the same world feels different every time<br><br>
+      🤝 <strong>Emma &amp; Ellis Together</strong> mode is great for sharing the device — same gameplay, both names called out<br><br>
+      📵 Works offline once loaded in the browser<br><br>
+      🌐 No accounts, no ads, no purchases — completely free
+    </p>
+  </div>
+
+  <p class="footer">Made with ❤️ for Emma and Ellis</p>
+
+</div>
+</body>
+</html>

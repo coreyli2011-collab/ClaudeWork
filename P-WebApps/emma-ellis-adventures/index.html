@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Emma &amp; Ellis">
+  <title>Emma &amp; Ellis Adventures!</title>
+  <link rel="apple-touch-icon" id="app-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box;
+        -webkit-tap-highlight-color:transparent;
+        -webkit-touch-callout:none; user-select:none; }
+    html, body {
+      width:100%; height:100%; overflow:hidden;
+      font-family:'Bubblegum Sans','Comic Sans MS',cursive;
+      overscroll-behavior:none; -webkit-overflow-scrolling:touch;
+    }
+    body {
+      background:linear-gradient(135deg,#FCE4EC,#E3F2FD);
+      padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
+      padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right);
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      position:fixed; inset:0; z-index:10;
+      display:none; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:14px; opacity:0; transition:opacity .35s ease; overflow-y:auto;
+    }
+    .screen.active  { display:flex; }
+    .screen.fade-in { opacity:1; }
+
+    /* ── TYPE ── */
+    h1 { font-size:clamp(1.8rem,6.5vw,3rem); text-align:center; line-height:1.1; }
+    h2 { font-size:clamp(1.2rem,4.5vw,1.9rem); text-align:center; }
+    p  { font-size:clamp(.9rem,3.5vw,1.2rem); text-align:center; line-height:1.5; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display:inline-block; padding:14px 28px; border-radius:50px; border:none;
+      cursor:pointer; font-family:inherit; font-size:clamp(.95rem,4vw,1.4rem);
+      font-weight:bold; transition:transform .1s,box-shadow .1s; touch-action:manipulation;
+    }
+    .btn:active { transform:scale(.93); }
+    .btn-pink   { background:linear-gradient(135deg,#FF79B0,#FF4DA6); color:#fff; box-shadow:0 5px 0 #C2006B; }
+    .btn-pink:active   { box-shadow:0 2px 0 #C2006B; transform:translateY(3px) scale(.97); }
+    .btn-teal   { background:linear-gradient(135deg,#4DD0E1,#00ACC1); color:#fff; box-shadow:0 5px 0 #007C91; }
+    .btn-teal:active   { box-shadow:0 2px 0 #007C91; transform:translateY(3px) scale(.97); }
+    .btn-purple { background:linear-gradient(135deg,#CE93D8,#9C27B0); color:#fff; box-shadow:0 5px 0 #6A0080; }
+    .btn-purple:active { box-shadow:0 2px 0 #6A0080; transform:translateY(3px) scale(.97); }
+    .btn-rainbow { background:linear-gradient(135deg,#FF79B0,#9C27B0,#26C6DA); color:#fff; box-shadow:0 5px 0 #5A0080; }
+    .btn-rainbow:active { box-shadow:0 2px 0 #5A0080; transform:translateY(3px) scale(.97); }
+
+    /* ── MUTE ── */
+    #mute-btn {
+      position:fixed; top:calc(env(safe-area-inset-top)+10px); right:14px;
+      z-index:999; background:rgba(255,255,255,.75); border:none;
+      border-radius:50%; width:46px; height:46px; font-size:1.5rem;
+      cursor:pointer; touch-action:manipulation;
+      box-shadow:0 2px 8px rgba(0,0,0,.18);
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    /* ── FLOATING BG ── */
+    .float-bg { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+    .float-item { position:absolute; animation:floatUp linear infinite; bottom:-60px; }
+    @keyframes floatUp {
+      0%  { transform:translateY(0) rotate(0deg); opacity:0; }
+      10% { opacity:.7; } 90% { opacity:.5; }
+      100%{ transform:translateY(-115vh) rotate(25deg); opacity:0; }
+    }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+
+    /* ── GENERIC CARD ── */
+    .glass-card {
+      background:rgba(255,255,255,.65); backdrop-filter:blur(8px);
+      border-radius:28px; border:3px solid rgba(255,255,255,.85);
+      padding:20px 16px; width:100%; max-width:460px;
+      box-shadow:0 8px 32px rgba(100,0,150,.12);
+    }
+
+    /* ══ TITLE SCREEN ══ */
+    #title-screen { background:linear-gradient(180deg,#FCE4EC 0%,#F3E5F5 50%,#E3F2FD 100%); }
+    .title-h1 { color:#7B1FA2; text-shadow:3px 3px 0 #fff,0 0 22px rgba(123,31,162,.3); }
+    .theme-previews { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0; }
+    .theme-preview {
+      border-radius:20px; border:3px solid rgba(255,255,255,.9);
+      padding:16px 8px; text-align:center; box-shadow:0 4px 14px rgba(0,0,0,.08);
+    }
+    .theme-preview .tp-emoji { font-size:clamp(2rem,7vw,2.8rem); display:block; margin-bottom:5px; }
+    .theme-preview .tp-name  { font-size:clamp(.72rem,2.8vw,1rem); font-weight:bold; }
+    .frozen-prev  { background:linear-gradient(180deg,rgba(179,229,252,.85),rgba(77,208,225,.45)); }
+    .frozen-prev  .tp-name  { color:#0277BD; }
+    .unicorn-prev { background:linear-gradient(180deg,rgba(225,190,231,.85),rgba(206,147,216,.45)); }
+    .unicorn-prev .tp-name  { color:#6A0080; }
+
+    /* ══ PLAYER SCREEN ══ */
+    #player-screen { background:linear-gradient(180deg,#FCE4EC 0%,#F3E5F5 50%,#E3F2FD 100%); }
+    .player-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0; }
+    .player-btn {
+      border:none; border-radius:22px; padding:18px 10px;
+      cursor:pointer; touch-action:manipulation; font-family:inherit;
+      transition:transform .15s; text-align:center;
+    }
+    .player-btn:active { transform:scale(.88); }
+    .p-emoji { font-size:clamp(2rem,7vw,2.8rem); display:block; margin-bottom:5px; }
+    .p-name  { font-size:clamp(.95rem,3.8vw,1.25rem); font-weight:bold; color:white;
+               text-shadow:1px 1px 2px rgba(0,0,0,.3); }
+    .emma-btn  { background:linear-gradient(135deg,#FF79B0,#FF4DA6); box-shadow:0 5px 0 #C2006B; }
+    .ellis-btn { background:linear-gradient(135deg,#4DD0E1,#00ACC1); box-shadow:0 5px 0 #006978; }
+    .both-btn  { background:linear-gradient(135deg,#FF79B0,#9B35AF,#26C6DA);
+                 box-shadow:0 5px 0 #5A0080; grid-column:span 2; }
+    .guest-btn { background:linear-gradient(135deg,#CE93D8,#9C27B0);
+                 box-shadow:0 5px 0 #6A0080; grid-column:span 2; padding:13px 10px; }
+
+    /* guest panel */
+    #guest-panel {
+      display:none; background:rgba(255,255,255,.92); border-radius:20px;
+      padding:14px 16px; margin-top:6px; border:2px solid rgba(156,39,176,.3);
+    }
+    #guest-panel p { color:#6A0E88; font-size:clamp(.82rem,3.3vw,.98rem); margin-bottom:10px; }
+    #guest-input {
+      width:100%; padding:12px 16px; border-radius:14px;
+      border:2px solid #CE93D8; font-family:inherit;
+      font-size:clamp(1rem,4vw,1.25rem); color:#4A0060;
+      background:white; outline:none; margin-bottom:12px;
+      -webkit-user-select:text; user-select:text;
+    }
+    #guest-input:focus { border-color:#9C27B0; box-shadow:0 0 0 3px rgba(156,39,176,.2); }
+    .guest-btns { display:flex; gap:10px; justify-content:center; }
+
+    /* ══ THEME SCREEN ══ */
+    #theme-screen { background:linear-gradient(180deg,#FCE4EC 0%,#F3E5F5 50%,#E3F2FD 100%); }
+    .theme-choices { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0; }
+    .theme-choice {
+      border:none; border-radius:22px; padding:20px 10px;
+      cursor:pointer; touch-action:manipulation; font-family:inherit;
+      text-align:center; transition:transform .15s;
+      box-shadow:0 5px 0 rgba(0,0,0,.2);
+    }
+    .theme-choice:active { transform:scale(.88); }
+    .tc-emoji { font-size:clamp(2.2rem,8vw,3.3rem); display:block; margin-bottom:7px; }
+    .tc-name  { font-size:clamp(.85rem,3.2vw,1.1rem); font-weight:bold; color:white;
+                text-shadow:1px 1px 2px rgba(0,0,0,.3); }
+    .frozen-choice  { background:linear-gradient(180deg,#B3E5FC,#4FC3F7,#0288D1); }
+    .unicorn-choice { background:linear-gradient(180deg,#E1BEE7,#CE93D8,#9C27B0); }
+
+    /* ══ MAP SCREEN ══ */
+    #map-screen { background:linear-gradient(180deg,#B3E5FC,#4FC3F7,#0288D1); }
+    .map-card {
+      background:rgba(255,255,255,.62); backdrop-filter:blur(8px);
+      border-radius:28px; border:3px solid rgba(255,255,255,.82);
+      padding:16px; width:100%; max-width:500px;
+    }
+    .adv-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; }
+    .adv-card {
+      background:rgba(255,255,255,.82); border-radius:18px;
+      border:3px solid rgba(255,255,255,.92);
+      padding:12px 6px; text-align:center; cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.1);
+      transition:transform .15s; touch-action:manipulation;
+    }
+    .adv-card:active { transform:scale(.87); }
+    .adv-emoji { font-size:clamp(1.8rem,6vw,2.8rem); display:block; }
+    .adv-label { font-size:clamp(.6rem,2.4vw,.88rem); color:#4A0080;
+                 font-weight:bold; margin-top:4px; line-height:1.2; }
+
+    /* ══ SCENE SCREEN ══ */
+    #scene-screen { background:#c8f7c5; overflow-y:auto; justify-content:flex-start; padding-top:10px; }
+    .scene-inner { width:100%; max-width:500px; }
+    .star-bar { display:flex; gap:10px; justify-content:center; margin-bottom:8px; }
+    .star-slot {
+      width:46px; height:46px; font-size:2.2rem;
+      display:flex; align-items:center; justify-content:center;
+      opacity:.25; transition:opacity .3s;
+    }
+    .star-slot.earned { opacity:1; animation:starPop .4s ease; }
+    @keyframes starPop {
+      0%  { transform:scale(0) rotate(-30deg); }
+      60% { transform:scale(1.35) rotate(12deg); }
+      100%{ transform:scale(1) rotate(0); }
+    }
+    .speech-row { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:8px; }
+    .scene-char { font-size:2.6rem; animation:bounce 2s ease-in-out infinite; }
+    .speech-bubble {
+      background:rgba(255,255,255,.92); border-radius:16px;
+      padding:6px 14px; font-size:clamp(.88rem,3.4vw,1.12rem); color:#4A0060;
+      box-shadow:0 2px 8px rgba(0,0,0,.1); flex:1; max-width:260px;
+    }
+    .prompt-box { background:rgba(255,255,255,.82); border-radius:16px; padding:9px 14px; margin-bottom:12px; text-align:center; }
+    .prompt-box p { color:#4A0060; font-size:clamp(.9rem,3.6vw,1.25rem); }
+    .items-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .item-btn {
+      background:rgba(255,255,255,.88); border-radius:18px;
+      border:3px solid rgba(255,255,255,.92);
+      padding:12px 6px; text-align:center; cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.1);
+      transition:transform .15s,opacity .3s; touch-action:manipulation;
+      font-family:inherit; width:100%;
+    }
+    .item-btn:active { transform:scale(.88); }
+    .item-btn.collected { opacity:.4; transform:scale(.8); pointer-events:none; background:rgba(200,255,200,.65); }
+    .item-emoji { font-size:clamp(2rem,7vw,2.8rem); display:block; }
+    .item-name  { font-size:clamp(.62rem,2.5vw,.88rem); color:#4A0060; margin-top:3px; }
+
+    /* ══ CELEBRATE SCREEN ══ */
+    #celebrate-screen { background:linear-gradient(180deg,#fff3b3,#ffe566); }
+    .celebrate-card {
+      background:rgba(255,255,255,.65); backdrop-filter:blur(8px);
+      border-radius:28px; border:3px solid rgba(255,255,255,.85);
+      padding:22px 18px; width:100%; max-width:420px; text-align:center;
+      position:relative; z-index:1;
+    }
+    .stars-display { font-size:2.6rem; margin:10px 0; letter-spacing:6px; }
+    .confetti-piece {
+      position:fixed; width:12px; height:12px; border-radius:2px;
+      animation:confettiFall linear infinite; pointer-events:none; z-index:200;
+    }
+    @keyframes confettiFall {
+      0%  { transform:translateY(-60px) rotate(0deg); opacity:1; }
+      100%{ transform:translateY(110vh) rotate(720deg); opacity:.4; }
+    }
+    .btn-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
+  </style>
+</head>
+<body>
+
+<div class="float-bg" id="float-bg"></div>
+<button id="mute-btn" onclick="toggleMute()">🔊</button>
+
+<!-- ══════════════════════════ TITLE ══════════════════════════ -->
+<div class="screen" id="title-screen">
+  <div class="glass-card">
+    <h1 class="title-h1">Emma &amp; Ellis<br>Adventures! ✨</h1>
+    <div class="theme-previews">
+      <div class="theme-preview frozen-prev">
+        <span class="tp-emoji">❄️👸⛄</span>
+        <div class="tp-name">Frozen World</div>
+      </div>
+      <div class="theme-preview unicorn-prev">
+        <span class="tp-emoji">🦄👸🌈</span>
+        <div class="tp-name">Unicorn Kingdom</div>
+      </div>
+    </div>
+    <p style="color:#6A0E88;margin:6px 0 18px;">Two magical worlds to explore!<br>Choose who is playing!</p>
+    <button class="btn btn-rainbow" onclick="goToPlayers()" style="width:100%;font-size:clamp(1.1rem,5vw,1.6rem);">
+      🌟 Let's Play! 🌟
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════ PLAYER SELECT ══════════════════════ -->
+<div class="screen" id="player-screen">
+  <div class="glass-card">
+    <h2 style="color:#7B1FA2;">👧 Who's Playing Today? 👧</h2>
+    <p style="color:#6A0E88;margin-top:4px;">Tap your name!</p>
+    <div class="player-grid">
+      <button class="player-btn emma-btn" onclick="selectPlayer('Emma')">
+        <span class="p-emoji">🌸</span>
+        <span class="p-name">Emma</span>
+      </button>
+      <button class="player-btn ellis-btn" onclick="selectPlayer('Ellis')">
+        <span class="p-emoji">❄️</span>
+        <span class="p-name">Ellis</span>
+      </button>
+      <button class="player-btn both-btn" onclick="selectPlayer('Emma &amp; Ellis')">
+        <span class="p-emoji">🌸❄️</span>
+        <span class="p-name">Emma &amp; Ellis Together!</span>
+      </button>
+      <button class="player-btn guest-btn" onclick="showGuestPanel()">
+        <span class="p-emoji">⭐</span>
+        <span class="p-name">Guest — Tap Here</span>
+      </button>
+    </div>
+    <div id="guest-panel">
+      <p>🔒 Grown-ups: type the guest name here</p>
+      <input type="text" id="guest-input" maxlength="15" placeholder="Type name..."
+             autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false">
+      <div class="guest-btns">
+        <button class="btn btn-purple" onclick="confirmGuest()" style="padding:10px 20px;font-size:1rem;">Done ✓</button>
+        <button class="btn btn-pink"   onclick="hideGuestPanel()" style="padding:10px 20px;font-size:1rem;">Cancel</button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <button class="btn btn-purple" onclick="showScreen('title-screen')" style="font-size:.95rem;padding:10px 22px;">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ THEME SELECT ══════════════════════ -->
+<div class="screen" id="theme-screen">
+  <div class="glass-card">
+    <h2 id="theme-greeting" style="color:#7B1FA2;">✨ Pick Your World!</h2>
+    <p style="color:#6A0E88;margin-top:4px;">Tap a world to choose!</p>
+    <div class="theme-choices">
+      <button class="theme-choice frozen-choice" onclick="selectTheme('frozen')">
+        <span class="tc-emoji">❄️⛄👸</span>
+        <div class="tc-name">Frozen World<br>with Elsa &amp; Anna</div>
+      </button>
+      <button class="theme-choice unicorn-choice" onclick="selectTheme('unicorn')">
+        <span class="tc-emoji">🦄🌈👸</span>
+        <div class="tc-name">Unicorn Kingdom<br>with Rapunzel</div>
+      </button>
+    </div>
+    <div style="text-align:center;margin-top:10px;">
+      <button class="btn btn-purple" onclick="goToPlayers()" style="font-size:.95rem;padding:10px 22px;">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ MAP ════════════════════════════ -->
+<div class="screen" id="map-screen">
+  <div class="map-card">
+    <h2 id="map-greeting" style="color:#4A0080;">🗺️ Where shall we go?</h2>
+    <p style="color:#1A3060;margin-top:4px;">Tap a picture to choose!</p>
+    <div class="adv-grid" id="adv-grid"></div>
+    <div style="text-align:center;margin-top:12px;">
+      <button class="btn btn-purple" onclick="goToTheme()" style="font-size:.9rem;padding:9px 20px;">← Change Theme</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ SCENE ══════════════════════════ -->
+<div class="screen" id="scene-screen">
+  <div class="scene-inner">
+    <div class="star-bar" id="star-bar"></div>
+    <div class="speech-row">
+      <div class="scene-char" id="scene-char">❄️</div>
+      <div class="speech-bubble" id="speech-bubble">Let's go!</div>
+    </div>
+    <div class="prompt-box"><p id="prompt-text">Tap everything you find!</p></div>
+    <div class="items-grid" id="items-grid"></div>
+    <div style="text-align:center;margin-top:14px;">
+      <button class="btn btn-purple" onclick="showMap()" style="font-size:.9rem;padding:9px 20px;">← Choose Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ CELEBRATE ══════════════════════════ -->
+<div class="screen" id="celebrate-screen">
+  <div class="celebrate-card">
+    <div id="celebrate-char" style="font-size:3.8rem;animation:bounce 1s ease-in-out infinite;display:inline-block;">🎉</div>
+    <h1 id="celebrate-title" style="margin:6px 0;color:#7B1FA2;">Amazing!</h1>
+    <p id="celebrate-sub" style="font-size:1.15rem;color:#4A0060;margin-bottom:4px;">You are magical! ✨</p>
+    <div class="stars-display" id="final-stars"></div>
+    <p id="complete-msg" style="color:#6B3080;font-size:1rem;"></p>
+    <div class="btn-row">
+      <button class="btn btn-pink"    onclick="replayAdventure()">Play Again! 🔄</button>
+      <button class="btn btn-purple"  onclick="showMap()">New World! 🗺️</button>
+      <button class="btn btn-rainbow" onclick="goToTheme()">Switch Theme! ✨</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ THEME & WORLD DATA ══════════════════════════════════════════════
+const THEMES = {
+  frozen: {
+    name: 'Frozen',
+    sceneChar: '❄️',
+    mapBg: 'linear-gradient(180deg,#B3E5FC 0%,#81D4FA 50%,#4FC3F7 100%)',
+    celebChar: '⛄',
+    celebSub: 'Pure magic — just like Elsa! ❄️',
+    worlds: {
+      ice_palace: {
+        label:"Elsa's Palace", emoji:'❄️',
+        bg:'linear-gradient(180deg,#B3E5FC 0%,#4FC3F7 50%,#0288D1 100%)',
+        floatItems:['❄️','💎','✨','⭐','💙'],
+        mapSay:"Elsas Ice Palace! Lets find frozen treasures!",
+        prompt:"Find treasures in Elsa's palace! ❄️",
+        sayPrompt:"Find the frozen treasures in Elsas palace!",
+        items:[
+          {emoji:'❄️',name:'Snowflake',  speech:'Snowflake! So sparkly!',   say:'Snowflake! So sparkly!'},
+          {emoji:'💎',name:'Ice Crystal',speech:'Crystal! Beautiful!',       say:'Ice Crystal! So beautiful!'},
+          {emoji:'👑',name:'Crown',      speech:'Crown! For a queen!',       say:'Crown! For a queen!'},
+          {emoji:'🎶',name:'Frozen Song',speech:'La la la! Sing with Elsa!', say:'Frozen song! La la la!'},
+          {emoji:'🦢',name:'Swan',       speech:'Swan! So graceful!',        say:'Swan! So graceful!'},
+          {emoji:'💙',name:'Blue Heart', speech:'Blue heart! Elsa loves you!',say:'Blue heart! Elsa loves you!'},
+          {emoji:'🌟',name:'Magic Star', speech:'Magic star! Twinkle!',      say:'Magic star! Twinkle!'},
+          {emoji:'✨',name:'Sparkle',    speech:'Sparkle! Like Elsa\'s magic!',say:'Sparkle! Like magic!'},
+          {emoji:'🌊',name:'Ice Wave',   speech:'Ice wave! So cool!',        say:'Ice wave! So cool!'},
+        ]
+      },
+      arendelle: {
+        label:'Arendelle', emoji:'🏰',
+        bg:'linear-gradient(180deg,#E3F2FD 0%,#BBDEFB 40%,#A5D6A7 100%)',
+        floatItems:['🌸','🎊','⛵','🌷','🎉'],
+        mapSay:"Arendelle! Lets explore with Anna!",
+        prompt:'Explore Arendelle with Anna! 🌸',
+        sayPrompt:'Explore Arendelle village with Anna!',
+        items:[
+          {emoji:'🌸',name:'Pink Flower',speech:'Flower! So pretty!',        say:'Pink flower! So pretty!'},
+          {emoji:'🧁',name:'Cupcake',    speech:'Cupcake! Yummy!',           say:'Cupcake! So yummy!'},
+          {emoji:'⛵',name:'Boat',       speech:'Boat! Sail away!',          say:'Boat! Lets sail away!'},
+          {emoji:'🌷',name:'Tulip',      speech:'Tulip! So lovely!',         say:'Tulip! So lovely!'},
+          {emoji:'🐦',name:'Bird',       speech:'Bird! Tweet tweet!',        say:'Bird! Tweet tweet!'},
+          {emoji:'🍫',name:'Chocolate',  speech:'Chocolate! Anna loves it!', say:'Chocolate! Annas favourite!'},
+          {emoji:'🎊',name:'Ribbon',     speech:'Ribbon! Celebrate!',        say:'Ribbon! Lets celebrate!'},
+          {emoji:'🍎',name:'Apple',      speech:'Apple! Crunch crunch!',     say:'Apple! Crunch crunch!'},
+          {emoji:'🎉',name:'Party Flag', speech:'Party! Hooray!',            say:'Party flag! Hooray!'},
+        ]
+      },
+      north_mountain: {
+        label:'North Mountain', emoji:'🏔️',
+        bg:'linear-gradient(180deg,#E3F2FD 0%,#B3E5FC 40%,#81D4FA 100%)',
+        floatItems:['🦌','🌲','❄️','⛄','🌨️'],
+        mapSay:"North Mountain! Lets find Sven and friends!",
+        prompt:'Find friends on the North Mountain! 🦌',
+        sayPrompt:'Find friends on the North Mountain!',
+        items:[
+          {emoji:'🦌',name:'Sven',       speech:'Sven! Good reindeer!',      say:'Sven the reindeer! Good boy!'},
+          {emoji:'⛄',name:'Olaf',       speech:'Olaf! Hi there!',           say:'Olaf the snowman! Hi there!'},
+          {emoji:'🌲',name:'Pine Tree',  speech:'Pine tree! So tall!',       say:'Pine tree! So tall!'},
+          {emoji:'🐿️',name:'Squirrel',  speech:'Squirrel! Nutty!',          say:'Squirrel! Nutty!'},
+          {emoji:'❄️',name:'Ice',        speech:'Ice! So cold!',             say:'Ice! So cold!'},
+          {emoji:'🌨️',name:'Snow',       speech:'Snow! Catch a snowflake!',  say:'Snow! Try to catch it!'},
+          {emoji:'🦉',name:'Owl',        speech:'Owl! Hoo hoo!',             say:'Owl! Hoo hoo!'},
+          {emoji:'🌟',name:'North Star', speech:'North star! Guide us home!',say:'North star! Guide us home!'},
+          {emoji:'🍀',name:'Clover',     speech:'Lucky clover!',             say:'Lucky clover!'},
+        ]
+      },
+      snowfield: {
+        label:"Olaf's Snowfield", emoji:'⛄',
+        bg:'linear-gradient(180deg,#E1F5FE 0%,#B3E5FC 60%,#E8EAF6 100%)',
+        floatItems:['⛄','🌨️','❄️','🥕','☃️'],
+        mapSay:"Olafs Snowfield! Lets play in the snow!",
+        prompt:'Play with Olaf in the snow! ⛄',
+        sayPrompt:'Play with Olaf in the snowy field!',
+        items:[
+          {emoji:'🥕',name:'Carrot Nose',speech:'Carrot! For Olaf\'s nose!', say:'Carrot nose! For Olaf!'},
+          {emoji:'❄️',name:'Snowflake',  speech:'Snowflake! Catch it!',      say:'Snowflake! Try to catch it!'},
+          {emoji:'🎿',name:'Skis',       speech:'Skis! Wheee!',              say:'Skis! Wheee!'},
+          {emoji:'🧤',name:'Mittens',    speech:'Mittens! So warm!',         say:'Mittens! So warm!'},
+          {emoji:'☃️',name:'Snow Angel', speech:'Snow angel! Flap flap!',   say:'Snow angel! Flap your arms!'},
+          {emoji:'🎁',name:'Gift',       speech:'Gift! A special surprise!', say:'Gift! A special surprise!'},
+          {emoji:'⭐',name:'Star',       speech:'Star! So bright!',          say:'Star! So bright!'},
+          {emoji:'🌨️',name:'Snow Cloud', speech:'Snow cloud! Here it comes!',say:'Snow cloud! Here comes the snow!'},
+          {emoji:'🧣',name:'Scarf',      speech:'Scarf! So cozy!',           say:'Scarf! So cozy!'},
+        ]
+      },
+      enchanted_forest: {
+        label:'Enchanted Forest', emoji:'🌿',
+        bg:'linear-gradient(180deg,#A5D6A7 0%,#66BB6A 50%,#388E3C 100%)',
+        floatItems:['🌿','🍂','🌺','🦋','✨'],
+        mapSay:"Enchanted Forest! Lets discover the magic!",
+        prompt:'Discover the Enchanted Forest! 🌿',
+        sayPrompt:'Discover the magic in the Enchanted Forest!',
+        items:[
+          {emoji:'🍂',name:'Magic Leaf', speech:'Magic leaf! Swirling!',     say:'Magic leaf! Swirling around!'},
+          {emoji:'🌺',name:'Red Flower', speech:'Red flower! So bright!',    say:'Red flower! So bright!'},
+          {emoji:'🦋',name:'Butterfly',  speech:'Butterfly! Flutter flutter!',say:'Butterfly! Flutter flutter!'},
+          {emoji:'🍄',name:'Mushroom',   speech:'Mushroom! So round!',       say:'Mushroom! So round!'},
+          {emoji:'🦊',name:'Fox',        speech:'Fox! Hello there!',         say:'Fox! Hello there!'},
+          {emoji:'💧',name:'Water Spirit',speech:'Water spirit! Splash!',    say:'Water spirit! Splash!'},
+          {emoji:'🌙',name:'Moon',       speech:'Moon! Shining bright!',     say:'Moon! Shining bright!'},
+          {emoji:'✨',name:'Magic',      speech:'Magic! Sparkle and shine!', say:'Magic! Sparkle and shine!'},
+          {emoji:'🌿',name:'Vine',       speech:'Vine! Hold on tight!',      say:'Vine! Hold on tight!'},
+        ]
+      },
+      frozen_river: {
+        label:'Frozen River', emoji:'🌊',
+        bg:'linear-gradient(180deg,#B2EBF2 0%,#80DEEA 50%,#4DD0E1 100%)',
+        floatItems:['🌊','🐟','❄️','🦢','💙'],
+        mapSay:"Frozen River! Lets skate and slide!",
+        prompt:'Skate on the Frozen River! 🌊',
+        sayPrompt:'Lets skate together on the frozen river!',
+        items:[
+          {emoji:'🐟',name:'Fish',       speech:'Fish! Blub blub!',          say:'Fish! Blub blub!'},
+          {emoji:'🦢',name:'Swan',       speech:'Swan! Glide so gracefully!',say:'Swan! Glide so gracefully!'},
+          {emoji:'💙',name:'Ice Heart',  speech:'Ice heart! From Elsa!',     say:'Ice heart! From Elsa!'},
+          {emoji:'🎿',name:'Ice Skates', speech:'Skates! Whoosh!',           say:'Ice skates! Whoosh!'},
+          {emoji:'❄️',name:'Snowflake',  speech:'Snowflake! So perfect!',    say:'Snowflake! So perfect!'},
+          {emoji:'🐡',name:'Puffer Fish',speech:'Puffer fish! So puffy!',   say:'Puffer fish! So puffy!'},
+          {emoji:'⭐',name:'Ice Star',   speech:'Ice star! Sparkle!',        say:'Ice star! Sparkle!'},
+          {emoji:'🌊',name:'Ice Wave',   speech:'Ice wave! So icy!',         say:'Ice wave! So icy!'},
+          {emoji:'🌟',name:'Shimmer',    speech:'Shimmer on the ice!',       say:'Shimmer on the ice!'},
+        ]
+      }
+    }
+  },
+
+  unicorn: {
+    name: 'Unicorn and Rapunzel',
+    sceneChar: '🦄',
+    mapBg: 'linear-gradient(180deg,#E1BEE7 0%,#CE93D8 50%,#AB47BC 100%)',
+    celebChar: '🦄',
+    celebSub: 'Magical like a unicorn princess! 🌈',
+    worlds: {
+      corona_castle: {
+        label:'Corona Castle', emoji:'🏰',
+        bg:'linear-gradient(180deg,#FFF9C4 0%,#FFD54F 50%,#FF8F00 100%)',
+        floatItems:['🏰','👑','🌸','🌟','🎀'],
+        mapSay:"Corona Castle! Lets find Rapunzels treasures!",
+        prompt:"Find treasures in Corona Castle! 👑",
+        sayPrompt:'Find treasures inside Corona Castle!',
+        items:[
+          {emoji:'👑',name:'Crown',      speech:'Crown! For a princess!',    say:'Crown! For a princess!'},
+          {emoji:'🎀',name:'Ribbon',     speech:'Ribbon! Pretty pink bow!',  say:'Ribbon! Pretty pink bow!'},
+          {emoji:'🌸',name:'Flower',     speech:'Flower! So lovely!',        say:'Flower! So lovely!'},
+          {emoji:'🦎',name:'Pascal',     speech:'Pascal! Hello little lizard!',say:'Pascal the chameleon! Hello!'},
+          {emoji:'🌟',name:'Castle Star',speech:'Castle star! Shine bright!', say:'Castle star! Shine bright!'},
+          {emoji:'🌺',name:'Rose',       speech:'Rose! So beautiful!',       say:'Rose! So beautiful!'},
+          {emoji:'✨',name:'Magic Dust', speech:'Magic dust! Swirl around!', say:'Magic dust! Swirl around!'},
+          {emoji:'🕯️',name:'Lantern',   speech:'Lantern! Glowing bright!',  say:'Lantern! Glowing bright!'},
+          {emoji:'🎊',name:'Celebrate',  speech:'Celebrate! Hooray!',        say:'Celebrate! Hooray!'},
+        ]
+      },
+      unicorn_meadow: {
+        label:'Unicorn Meadow', emoji:'🦄',
+        bg:'linear-gradient(180deg,#F3E5F5 0%,#CE93D8 50%,#9C27B0 100%)',
+        floatItems:['🦄','🌈','🌸','💫','🌟'],
+        mapSay:"Unicorn Meadow! Lets find rainbow treasures!",
+        prompt:'Find rainbow treasures in the meadow! 🦄',
+        sayPrompt:'Find rainbow treasures in the unicorn meadow!',
+        items:[
+          {emoji:'🦄',name:'Unicorn',    speech:'Unicorn! So beautiful!',    say:'Unicorn! So beautiful!'},
+          {emoji:'🌈',name:'Rainbow',    speech:'Rainbow! All the colors!',  say:'Rainbow! All the beautiful colors!'},
+          {emoji:'🌸',name:'Blossom',    speech:'Blossom! So pretty!',       say:'Cherry blossom! So pretty!'},
+          {emoji:'🌻',name:'Sunflower',  speech:'Sunflower! So sunny!',      say:'Sunflower! So sunny!'},
+          {emoji:'🍀',name:'Lucky Clover',speech:'Lucky clover!',            say:'Lucky clover!'},
+          {emoji:'🦋',name:'Butterfly',  speech:'Butterfly! Flutter flutter!',say:'Butterfly! Flutter flutter!'},
+          {emoji:'💫',name:'Magic Spark',speech:'Magic spark! Zoom!',        say:'Magic spark! Zoom!'},
+          {emoji:'🌷',name:'Tulip',      speech:'Tulip! So lovely!',         say:'Tulip! So lovely!'},
+          {emoji:'🌼',name:'Daisy',      speech:'Daisy! So cute!',           say:'Daisy! So cute!'},
+        ]
+      },
+      lantern_sky: {
+        label:'Lantern Festival', emoji:'🏮',
+        bg:'linear-gradient(180deg,#1A237E 0%,#283593 40%,#3949AB 100%)',
+        floatItems:['🏮','🌟','✨','💫','🌙'],
+        mapSay:"Lantern Festival! Lets light up the sky!",
+        prompt:'Light up the sky with lanterns! 🏮',
+        sayPrompt:'Light up the sky with beautiful floating lanterns!',
+        items:[
+          {emoji:'🏮',name:'Lantern',    speech:'Lantern! Float up to the sky!',say:'Lantern! Float up to the sky!'},
+          {emoji:'🌟',name:'Star',       speech:'Star! So bright!',           say:'Star! So bright!'},
+          {emoji:'✨',name:'Sparkle',    speech:'Sparkle! Like wishes!',      say:'Sparkle! Like making a wish!'},
+          {emoji:'💫',name:'Shooting Star',speech:'Shooting star! Make a wish!',say:'Shooting star! Make a wish!'},
+          {emoji:'🌙',name:'Moon',       speech:'Moon! Glowing beautifully!', say:'Moon! Glowing beautifully!'},
+          {emoji:'🎶',name:'Music',      speech:'Music! La la la!',           say:'Music! La la la!'},
+          {emoji:'🎊',name:'Celebrate',  speech:'Celebrate! Hooray!',         say:'Celebrate! Hooray!'},
+          {emoji:'⭐',name:'Evening Star',speech:'Evening star! Twinkle!',    say:'Evening star! Twinkle!'},
+          {emoji:'🌸',name:'Petal',      speech:'Flower petal! So soft!',     say:'Flower petal! So soft!'},
+        ]
+      },
+      magic_forest: {
+        label:'Magic Forest', emoji:'🌲',
+        bg:'linear-gradient(180deg,#E8F5E9 0%,#A5D6A7 50%,#66BB6A 100%)',
+        floatItems:['🌲','🍄','🌺','🦋','✨'],
+        mapSay:"Magic Forest! Lets find woodland friends!",
+        prompt:'Find magical friends in the forest! 🌲',
+        sayPrompt:'Find magical friends in the magic forest!',
+        items:[
+          {emoji:'🍄',name:'Mushroom',   speech:'Magic mushroom! So round!', say:'Magic mushroom! So round!'},
+          {emoji:'🌺',name:'Forest Flower',speech:'Forest flower! So bright!',say:'Forest flower! So bright!'},
+          {emoji:'🦋',name:'Butterfly',  speech:'Butterfly! Flutter flutter!',say:'Butterfly! Flutter flutter!'},
+          {emoji:'🐰',name:'Bunny',      speech:'Bunny! Hop hop!',           say:'Bunny! Hop hop!'},
+          {emoji:'🦔',name:'Hedgehog',   speech:'Hedgehog! Spiky!',          say:'Hedgehog! Spiky!'},
+          {emoji:'🌿',name:'Leaf',       speech:'Leaf! Rustle rustle!',      say:'Leaf! Rustle rustle!'},
+          {emoji:'🌟',name:'Magic Light',speech:'Magic light! Glow!',        say:'Magic light! Glow!'},
+          {emoji:'🍃',name:'Fern',       speech:'Fern! So green and lovely!',say:'Fern! So green and lovely!'},
+          {emoji:'🦜',name:'Parrot',     speech:'Parrot! Pretty pretty bird!',say:'Parrot! Pretty pretty bird!'},
+        ]
+      },
+      rainbow_valley: {
+        label:'Rainbow Valley', emoji:'🌈',
+        bg:'linear-gradient(180deg,#F8BBD9 0%,#E1BEE7 50%,#BBDEFB 100%)',
+        floatItems:['🌈','💕','⭐','💫','✨'],
+        mapSay:"Rainbow Valley! Lets collect all the colors!",
+        prompt:'Collect all the rainbow colors! 🌈',
+        sayPrompt:'Can you collect all the rainbow colors?',
+        items:[
+          {emoji:'❤️',name:'Red',        speech:'Red! Red!',                 say:'Red!'},
+          {emoji:'🧡',name:'Orange',     speech:'Orange!',                   say:'Orange!'},
+          {emoji:'💛',name:'Yellow',     speech:'Yellow!',                   say:'Yellow!'},
+          {emoji:'💚',name:'Green',      speech:'Green!',                    say:'Green!'},
+          {emoji:'💙',name:'Blue',       speech:'Blue!',                     say:'Blue!'},
+          {emoji:'💜',name:'Purple',     speech:'Purple! My favourite!',     say:'Purple! My favourite!'},
+          {emoji:'🌈',name:'Rainbow',    speech:'Rainbow! All colors together!',say:'Rainbow! All the colors together!'},
+          {emoji:'⭐',name:'Star',       speech:'Star! Twinkle twinkle!',    say:'Star! Twinkle twinkle!'},
+          {emoji:'💕',name:'Pink Heart', speech:'Pink heart! So much love!', say:'Pink heart! So much love!'},
+        ]
+      },
+      starlight_kingdom: {
+        label:'Starlight Kingdom', emoji:'🌟',
+        bg:'linear-gradient(180deg,#1A237E 0%,#4527A0 50%,#6A1B9A 100%)',
+        floatItems:['🌟','⭐','💫','✨','🌙'],
+        mapSay:"Starlight Kingdom! Lets find magic stars!",
+        prompt:'Find magic stars in the kingdom! 🌟',
+        sayPrompt:'Find the magic stars in the Starlight Kingdom!',
+        items:[
+          {emoji:'🌟',name:'Big Star',   speech:'Big star! So bright!',      say:'Big star! So bright!'},
+          {emoji:'⭐',name:'Little Star',speech:'Little star! Twinkle!',     say:'Little star! Twinkle twinkle!'},
+          {emoji:'💫',name:'Shooting Star',speech:'Shooting star! Make a wish!',say:'Shooting star! Make a wish!'},
+          {emoji:'✨',name:'Sparkle',    speech:'Sparkle! Pure magic!',      say:'Sparkle! Pure magic!'},
+          {emoji:'🌙',name:'Moon',       speech:'Moon! Goodnight everyone!', say:'Moon! Goodnight everyone!'},
+          {emoji:'👑',name:'Star Crown', speech:'Star crown! For a queen!',  say:'Star crown! For a queen!'},
+          {emoji:'🎀',name:'Royal Bow',  speech:'Royal bow! So pretty!',     say:'Royal bow! So pretty!'},
+          {emoji:'🦄',name:'Unicorn',    speech:'Unicorn! My magic friend!', say:'Unicorn! My magic friend!'},
+          {emoji:'💕',name:'Heart',      speech:'Heart! I love you!',        say:'Heart! I love you!'},
+        ]
+      }
+    }
+  }
+};
+
+// ══ STATE ═══════════════════════════════════════════════════════════
+let currentPlayer = 'Emma';
+let currentTheme  = 'frozen';
+let currentWorld  = 'ice_palace';
+let itemsFound    = 0;
+let totalItems    = 3;
+let pickedItems   = [];
+
+// ══ SPEECH ══════════════════════════════════════════════════════════
+let speechMuted = false;
+let ttsVoices   = [];
+
+if (window.speechSynthesis) {
+  const loadV = () => { ttsVoices = window.speechSynthesis.getVoices(); };
+  window.speechSynthesis.onvoiceschanged = loadV; loadV();
+}
+
+function cleanForSpeech(t) {
+  return t.replace(/[^\u0000-\u024F\s.,!?'`-]/g,'').replace(/\s+/g,' ').trim();
+}
+
+function say(text, delay) {
+  if (speechMuted || !window.speechSynthesis) return;
+  const clean = cleanForSpeech(text); if (!clean) return;
+  const go = () => {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(clean);
+    u.rate=0.88; u.pitch=1.15; u.volume=1;
+    const pick = ttsVoices.find(v =>
+      v.name==='Samantha' || v.name==='Google US English' ||
+      (v.lang.startsWith('en') && v.localService)
+    ) || ttsVoices.find(v=>v.lang.startsWith('en'));
+    if (pick) u.voice = pick;
+    window.speechSynthesis.speak(u);
+  };
+  delay ? setTimeout(go, delay) : go();
+}
+
+function toggleMute() {
+  speechMuted = !speechMuted;
+  document.getElementById('mute-btn').textContent = speechMuted ? '🔇' : '🔊';
+  if (speechMuted && window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+// ══ AUDIO TONES ═════════════════════════════════════════════════════
+let audioCtx;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, dur, type, vol) {
+  type=type||'sine'; vol=vol||0.28;
+  const ac=getAudio(), osc=ac.createOscillator(), g=ac.createGain();
+  osc.type=type;
+  osc.frequency.setValueAtTime(freq, ac.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(freq*1.4, ac.currentTime+dur*.6);
+  g.gain.setValueAtTime(vol, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+dur);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(); osc.stop(ac.currentTime+dur);
+}
+function playCollect()  { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.14,'triangle',.3),i*90)); }
+function playStar()     { [440,554,659,880].forEach((f,i)=>setTimeout(()=>tone(f,.12,'sine',.32),i*70)); }
+function playCelebrate(){ [523,587,659,698,784,880,988,1047].forEach((f,i)=>setTimeout(()=>tone(f,.18,'triangle',.28),i*110)); }
+
+// ══ SCREEN TRANSITIONS ══════════════════════════════════════════════
+function showScreen(id) {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  document.querySelectorAll('.screen.active').forEach(s => {
+    s.classList.remove('fade-in');
+    setTimeout(()=>s.classList.remove('active'), 360);
+  });
+  const next = document.getElementById(id);
+  next.classList.add('active');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>next.classList.add('fade-in')));
+}
+
+// ══ FLOATING BG ═════════════════════════════════════════════════════
+function makeFloatBg(emojis, count) {
+  count = count||12;
+  const bg = document.getElementById('float-bg'); bg.innerHTML='';
+  for (let i=0; i<count; i++) {
+    const el = document.createElement('div'); el.className='float-item';
+    el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    el.style.left             = Math.random()*100+'%';
+    el.style.animationDuration  = (4+Math.random()*7)+'s';
+    el.style.animationDelay     = (Math.random()*7)+'s';
+    el.style.fontSize           = (1.1+Math.random()*1.3)+'rem';
+    bg.appendChild(el);
+  }
+}
+
+// ══ PLAYER SELECT ════════════════════════════════════════════════════
+function goToPlayers() {
+  document.getElementById('guest-panel').style.display = 'none';
+  showScreen('player-screen');
+  say('Who is playing today? Tap your name!', 400);
+}
+
+function selectPlayer(name) {
+  currentPlayer = name;
+  const isBoth = name === 'Emma & Ellis';
+  say(isBoth ? 'Emma and Ellis together! Lets go!' : 'Hello, '+name+'! Lets go!');
+  setTimeout(()=>goToTheme(), 900);
+}
+
+function showGuestPanel() {
+  say('Ask a grown-up to type the name!');
+  document.getElementById('guest-panel').style.display = 'block';
+  document.getElementById('guest-input').value = '';
+  setTimeout(()=>document.getElementById('guest-input').focus(), 150);
+}
+function hideGuestPanel() { document.getElementById('guest-panel').style.display='none'; }
+function confirmGuest() {
+  const raw = document.getElementById('guest-input').value.trim(); if (!raw) return;
+  const name = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  hideGuestPanel();
+  selectPlayer(name);
+}
+document.getElementById('guest-input').addEventListener('keydown', e => { if(e.key==='Enter') confirmGuest(); });
+
+// ══ THEME SELECT ═════════════════════════════════════════════════════
+function goToTheme() {
+  const who = currentPlayer==='Emma & Ellis' ? 'Emma and Ellis' : currentPlayer;
+  document.getElementById('theme-greeting').textContent = '✨ '+who+', pick your world!';
+  showScreen('theme-screen');
+  say(who+'! Which world do you want? Frozen, or Unicorn and Rapunzel?', 450);
+}
+
+function selectTheme(key) {
+  currentTheme = key;
+  say(THEMES[key].name+'! Lets go!');
+  setTimeout(()=>showMap(), 600);
+}
+
+// ══ MAP ══════════════════════════════════════════════════════════════
+function showMap() {
+  const theme = THEMES[currentTheme];
+  const who   = currentPlayer==='Emma & Ellis' ? 'Emma and Ellis' : currentPlayer;
+
+  document.getElementById('map-greeting').textContent = '🗺️ '+who+', where shall we go?';
+  document.getElementById('map-screen').style.background = theme.mapBg;
+
+  // Build world grid dynamically
+  const grid = document.getElementById('adv-grid'); grid.innerHTML='';
+  Object.entries(theme.worlds).forEach(([key,world])=>{
+    const card = document.createElement('div'); card.className='adv-card';
+    card.innerHTML = `<span class="adv-emoji">${world.emoji}</span><div class="adv-label">${world.label}</div>`;
+    card.onclick = ()=>pickWorld(key);
+    grid.appendChild(card);
+  });
+
+  showScreen('map-screen');
+  say(who+'! Where shall we go? Tap a picture to choose your adventure!', 500);
+}
+
+function pickWorld(key) {
+  const world = THEMES[currentTheme].worlds[key];
+  say(world.mapSay);
+  setTimeout(()=>startAdventure(key), 650);
+}
+
+// ══ ADVENTURE ════════════════════════════════════════════════════════
+function startAdventure(worldKey) {
+  currentWorld = worldKey;
+  const theme  = THEMES[currentTheme];
+  const world  = theme.worlds[worldKey];
+  itemsFound   = 0;
+  pickedItems  = [...world.items].sort(()=>Math.random()-.5).slice(0,3);
+  totalItems   = pickedItems.length;
+
+  document.getElementById('scene-screen').style.background = world.bg;
+  document.getElementById('scene-char').textContent   = theme.sceneChar;
+  document.getElementById('speech-bubble').textContent = "Let's go! ✨";
+  document.getElementById('prompt-text').textContent  = world.prompt;
+
+  const bar = document.getElementById('star-bar'); bar.innerHTML='';
+  for (let i=0; i<totalItems; i++) {
+    const s = document.createElement('div'); s.className='star-slot'; s.id='star-'+i; s.textContent='⭐';
+    bar.appendChild(s);
+  }
+
+  const g = document.getElementById('items-grid'); g.innerHTML='';
+  pickedItems.forEach(item=>{
+    const btn = document.createElement('button'); btn.className='item-btn';
+    btn.innerHTML = `<span class="item-emoji">${item.emoji}</span><span class="item-name">${item.name}</span>`;
+    btn.addEventListener('click', ()=>collectItem(btn, item));
+    g.appendChild(btn);
+  });
+
+  makeFloatBg(world.floatItems);
+  showScreen('scene-screen');
+  const names = pickedItems.map(i=>i.name).join(', ');
+  say(world.sayPrompt+' Can you find the '+names+'?', 900);
+}
+
+function replayAdventure() { startAdventure(currentWorld); }
+
+// ══ COLLECT ══════════════════════════════════════════════════════════
+function collectItem(btn, item) {
+  if (btn.classList.contains('collected')) return;
+  btn.classList.add('collected');
+  document.getElementById('speech-bubble').textContent = item.speech;
+  const slot = document.getElementById('star-'+itemsFound);
+  if (slot) { slot.classList.add('earned'); playStar(); }
+  btn.style.transition = 'transform .25s';
+  btn.style.transform  = 'scale(1.28) rotate(8deg)';
+  setTimeout(()=>{ btn.style.transform='scale(.82)'; }, 280);
+  playCollect();
+  say(item.say);
+  itemsFound++;
+  if (itemsFound>=totalItems) setTimeout(celebrate, 750);
+}
+
+// ══ CELEBRATE ════════════════════════════════════════════════════════
+function celebrate() {
+  playCelebrate();
+  const theme  = THEMES[currentTheme];
+  const who    = currentPlayer==='Emma & Ellis' ? 'Emma and Ellis' : currentPlayer;
+  const sayWho = currentPlayer==='Emma & Ellis' ? 'Emma and Ellis' : currentPlayer;
+
+  document.getElementById('celebrate-char').textContent   = theme.celebChar;
+  document.getElementById('celebrate-title').textContent  = who+', Amazing!';
+  document.getElementById('celebrate-sub').textContent    = theme.celebSub;
+  document.getElementById('final-stars').textContent      = '⭐'.repeat(itemsFound);
+  document.getElementById('complete-msg').textContent     =
+    'You finished the '+theme.worlds[currentWorld].label+' adventure! 🎊';
+
+  document.querySelectorAll('.confetti-piece').forEach(e=>e.remove());
+  const cols = currentTheme==='frozen'
+    ? ['#B3E5FC','#FFD700','#4FC3F7','#E1F5FE','#81D4FA','#FFFFFF','#4DD0E1']
+    : ['#F48FB1','#FFD700','#CE93D8','#F3E5F5','#FF80AB','#E040FB','#FFF9C4'];
+  for (let i=0; i<38; i++) {
+    const c = document.createElement('div'); c.className='confetti-piece';
+    c.style.background       = cols[Math.floor(Math.random()*cols.length)];
+    c.style.left             = Math.random()*100+'vw';
+    c.style.animationDuration  = (2+Math.random()*3)+'s';
+    c.style.animationDelay     = (Math.random()*2)+'s';
+    c.style.borderRadius       = Math.random()>.5 ? '50%' : '3px';
+    document.body.appendChild(c);
+  }
+  makeFloatBg(['🎉','⭐','🌟','✨','🎊','💫','💕'], 18);
+  showScreen('celebrate-screen');
+  say('Yay, '+sayWho+'! Amazing job! You found everything! You got '+itemsFound+' stars!', 500);
+}
+
+// ══ HOME SCREEN ICON ═════════════════════════════════════════════════
+function generateAppIcon() {
+  const sz = 512;
+  const cv = document.createElement('canvas'); cv.width=cv.height=sz;
+  const x  = cv.getContext('2d');
+
+  const draw = () => {
+    x.clearRect(0,0,sz,sz);
+
+    // Split gradient: pink (Emma) → teal (Ellis)
+    const g = x.createLinearGradient(0,0,sz,sz);
+    g.addColorStop(0,  '#FCE4EC'); g.addColorStop(0.38,'#FF79B0');
+    g.addColorStop(0.62,'#26C6DA'); g.addColorStop(1,'#006064');
+    x.fillStyle=g; x.fillRect(0,0,sz,sz);
+
+    // Diagonal shimmer divider
+    x.globalAlpha=0.14; x.fillStyle='white';
+    x.beginPath(); x.moveTo(sz*.38,0); x.lineTo(sz*.62,0);
+    x.lineTo(sz*.52,sz); x.lineTo(sz*.28,sz); x.closePath(); x.fill();
+    x.globalAlpha=1;
+
+    // Glowing accent circles
+    [[60,60,32,'rgba(255,255,255,.32)'],[450,70,26,'rgba(255,255,255,.26)'],
+     [38,442,38,'rgba(255,255,255,.22)'],[470,452,28,'rgba(255,255,255,.22)'],
+     [255,26,20,'rgba(255,255,255,.26)'],[495,242,16,'rgba(255,255,255,.22)']
+    ].forEach(([cx,cy,r,c])=>{ x.beginPath(); x.arc(cx,cy,r,0,Math.PI*2); x.fillStyle=c; x.fill(); });
+
+    // Decorative emojis
+    x.textAlign='center'; x.textBaseline='middle';
+    [['❄️',105,92,52],['🌈',415,86,48],['⭐',78,396,46],
+     ['🌸',448,406,44],['🦄',385,466,46],['✨',258,40,38]
+    ].forEach(([e,px,py,fs])=>{
+      x.globalAlpha=0.82; x.font=fs+'px serif'; x.fillText(e,px,py);
+    });
+    x.globalAlpha=1;
+
+    // Main icons — snowflake left, unicorn right
+    x.font='145px serif'; x.textAlign='center'; x.textBaseline='middle';
+    x.fillText('❄️', sz/2-90, sz/2-15);
+    x.fillText('🦄', sz/2+90, sz/2-15);
+
+    // "Emma & Ellis" label
+    x.textBaseline='alphabetic';
+    x.font='bold 46px "Bubblegum Sans",Arial Rounded MT Bold,Arial,sans-serif';
+    x.fillStyle='rgba(50,0,30,.5)';
+    x.fillText('Emma & Ellis', sz/2+3, sz-44+3);
+    x.fillStyle='#FFD700';
+    x.fillText('Emma & Ellis', sz/2, sz-44);
+
+    const lnk = document.getElementById('app-icon');
+    if (lnk) lnk.href = cv.toDataURL('image/png');
+  };
+
+  draw();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+}
+
+// ══ INIT ═════════════════════════════════════════════════════════════
+makeFloatBg(['❄️','🦄','🌸','🌈','⭐','✨','💕'], 14);
+showScreen('title-screen');
+say("Emma and Ellis Adventures! Tap Lets Play to start!", 700);
+generateAppIcon();
+</script>
+</body>
+</html>
