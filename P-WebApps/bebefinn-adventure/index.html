@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Bebefinn Adventure">
   <title>Bebefinn's Big Adventure!</title>
+  <link rel="apple-touch-icon" id="app-icon">
   <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
   <style>
     * { margin:0; padding:0; box-sizing:border-box;
@@ -328,7 +329,7 @@
     <div class="prompt-box"><p id="prompt-text">Tap everything you find!</p></div>
     <div class="items-grid" id="items-grid"></div>
     <div style="text-align:center;margin-top:16px;">
-      <button class="btn btn-purple" onclick="showScreen('map-screen')" style="font-size:1rem;padding:10px 26px;">← Choose Again</button>
+      <button class="btn btn-purple" onclick="showMap()" style="font-size:1rem;padding:10px 26px;">← Choose Again</button>
     </div>
   </div>
 </div>
@@ -343,7 +344,7 @@
     <p id="complete-msg" style="color:#6B3080;font-size:1.05rem;"></p>
     <div class="btn-row">
       <button class="btn btn-pink"   onclick="replayAdventure()">Play Again! 🔄</button>
-      <button class="btn btn-purple" onclick="showScreen('map-screen')">New World! 🗺️</button>
+      <button class="btn btn-purple" onclick="showMap()">New World! 🗺️</button>
     </div>
   </div>
 </div>
@@ -356,6 +357,7 @@ const WORLDS = {
     floatItems:['🌸','🌻','🦋','🐝','🍃'],
     prompt:'Find all the garden friends! 🌸',
     sayPrompt:'Can you find all the garden friends?',
+    mapSay:'Garden! Lets find flowers and butterflies!',
     items:[
       {emoji:'🌻',name:'Sunflower',   speech:'Sunflower! So sunny! ☀️',  say:'Sunflower! So sunny!'},
       {emoji:'🌷',name:'Tulip',       speech:'Tulip! So pretty! 💕',     say:'Tulip! So pretty!'},
@@ -373,6 +375,7 @@ const WORLDS = {
     floatItems:['🐚','🌊','🦀','⭐','☀️'],
     prompt:'Bebefinn loves the beach! Find them! 🏖️',
     sayPrompt:'Bebefinn loves the beach! Can you find them all?',
+    mapSay:'Beach! Lets find shells and Baby Shark!',
     items:[
       {emoji:'🐚',name:'Shell',      speech:'Shell! So pretty! 🐚',         say:'Shell! So pretty!'},
       {emoji:'🦀',name:'Crab',       speech:'Crab! Pinch pinch! 🦀',        say:'Crab! Pinch pinch!'},
@@ -390,6 +393,7 @@ const WORLDS = {
     floatItems:['🍄','🌰','🍃','🦔','🐿️'],
     prompt:'Explore the magical forest! 🌳',
     sayPrompt:'Let us explore the magical forest!',
+    mapSay:'Forest! Lets find bunnies and owls!',
     items:[
       {emoji:'🐿️',name:'Squirrel', speech:'Squirrel! So nutty! 🌰',  say:'Squirrel! So nutty!'},
       {emoji:'🦔',name:'Hedgehog', speech:'Hedgehog! Spiky! 🦔',      say:'Hedgehog! Spiky!'},
@@ -407,6 +411,7 @@ const WORLDS = {
     floatItems:['🌈','⭐','💫','✨','💕'],
     prompt:'Collect all the rainbow colors! 🌈',
     sayPrompt:'Can you collect all the rainbow colors?',
+    mapSay:'Rainbow! Lets collect all the colors!',
     items:[
       {emoji:'❤️',name:'Red',    speech:'Red! Red! ❤️',          say:'Red!'},
       {emoji:'🧡',name:'Orange', speech:'Orange! 🧡',             say:'Orange!'},
@@ -424,6 +429,7 @@ const WORLDS = {
     floatItems:['🐮','🐔','🐑','🌻','🥕'],
     prompt:'Meet all the farm animals! 🐄',
     sayPrompt:'Can you meet all the farm animals?',
+    mapSay:'Farm! Lets meet the animals!',
     items:[
       {emoji:'🐮',name:'Cow',       speech:'Cow! Moo moo! 🐮',          say:'Cow! Moo moo!'},
       {emoji:'🐷',name:'Pig',       speech:'Pig! Oink oink! 🐷',        say:'Pig! Oink oink!'},
@@ -441,6 +447,7 @@ const WORLDS = {
     floatItems:['⭐','🌙','💫','✨','🪐'],
     prompt:'Fly through space with Bebefinn! 🚀',
     sayPrompt:'Let us fly through space with Bebefinn!',
+    mapSay:'Space! Lets fly to the stars!',
     items:[
       {emoji:'⭐',name:'Star',    speech:'Star! I am a star! ⭐',     say:'Star! I am a star!'},
       {emoji:'🌙',name:'Moon',    speech:'Moon! Goodnight! 🌙',       say:'Moon! Goodnight!'},
@@ -548,6 +555,13 @@ function showScreen(id) {
   requestAnimationFrame(()=>requestAnimationFrame(()=>next.classList.add('fade-in')));
 }
 
+// ══ SHOW MAP (always speaks greeting) ═══════════════════
+function showMap() {
+  document.getElementById('map-greeting').textContent='🗺️ '+currentPlayer+', where shall we go?';
+  showScreen('map-screen');
+  say(currentPlayer+'! Where shall we go? Tap a picture to choose your adventure!', 500);
+}
+
 // ══ FLOATING BG ═════════════════════════════════════════
 function makeFloatBg(emojis, count) {
   count = count||12;
@@ -613,9 +627,7 @@ function selectPlayer(name) {
   currentPlayer=name;
   say('Hello, '+name+'! Lets go!');
   renderPlayers();
-  document.getElementById('map-greeting').textContent='🗺️ '+name+', where shall we go?';
-  setTimeout(()=>showScreen('map-screen'), 900);
-  setTimeout(()=>say(name+', where shall we go? Tap a picture to choose!'), 1400);
+  setTimeout(()=>showMap(), 900);
 }
 
 function removeGuest(name) {
@@ -652,8 +664,8 @@ document.getElementById('guest-input').addEventListener('keydown',e=>{
 
 // ══ WORLD PICK & ADVENTURE ═══════════════════════════════
 function pickWorld(key) {
-  say(WORLDS[key].label+'!');
-  setTimeout(()=>startAdventure(key), 450);
+  say(WORLDS[key].mapSay);
+  setTimeout(()=>startAdventure(key), 650);
 }
 
 function startAdventure(worldKey) {
@@ -735,11 +747,69 @@ function celebrate() {
   say('Yay, '+currentPlayer+'! Amazing job! You found everything! You got '+itemsFound+' stars!', 500);
 }
 
+// ══ HOME SCREEN ICON ════════════════════════════════════
+function generateAppIcon() {
+  const sz = 512;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = sz;
+  const x = cv.getContext('2d');
+
+  const draw = () => {
+    x.clearRect(0, 0, sz, sz);
+
+    // Colorful gradient background (pink → purple)
+    const grd = x.createLinearGradient(0, 0, sz, sz);
+    grd.addColorStop(0,   '#FFB7D5');
+    grd.addColorStop(0.3, '#FF79B0');
+    grd.addColorStop(0.7, '#C77DFF');
+    grd.addColorStop(1,   '#7B1FA2');
+    x.fillStyle = grd;
+    x.fillRect(0, 0, sz, sz);
+
+    // Soft glowing accent circles
+    [[60,60,35,'rgba(255,255,200,.35)'],[450,75,28,'rgba(255,255,255,.30)'],
+     [35,435,42,'rgba(255,200,255,.28)'],[472,442,30,'rgba(255,215,0,.25)'],
+     [255,28,22,'rgba(255,255,255,.25)'],[495,242,18,'rgba(255,160,255,.28)']
+    ].forEach(([cx,cy,r,col])=>{
+      x.beginPath(); x.arc(cx,cy,r,0,Math.PI*2); x.fillStyle=col; x.fill();
+    });
+
+    // Scattered decorative emojis
+    x.textAlign='center'; x.textBaseline='middle';
+    [['⭐',90,88,52],['🌸',422,84,48],['✨',72,394,46],
+     ['💕',456,408,42],['🎵',374,464,44],['🌟',258,42,40]
+    ].forEach(([e,px,py,fs])=>{
+      x.globalAlpha=0.82; x.font=fs+'px serif'; x.fillText(e,px,py);
+    });
+    x.globalAlpha=1;
+
+    // Big baby shark — the centrepiece
+    x.font='215px serif';
+    x.fillText('🦈', sz/2, sz/2 - 22);
+
+    // "Bebefinn" label at bottom
+    x.textBaseline='alphabetic';
+    x.font='bold 58px "Bubblegum Sans",Arial Rounded MT Bold,Arial,sans-serif';
+    x.fillStyle='rgba(80,0,60,.5)';
+    x.fillText('Bebefinn', sz/2+3, sz-44+3);  // shadow
+    x.fillStyle='#FFD700';
+    x.fillText('Bebefinn', sz/2, sz-44);       // gold text
+
+    const lnk = document.getElementById('app-icon');
+    if (lnk) lnk.href = cv.toDataURL('image/png');
+  };
+
+  draw(); // draw immediately with fallback font
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(draw); // redraw once Bubblegum Sans is loaded
+  }
+}
+
 // ══ INIT ════════════════════════════════════════════════
-document.getElementById('map-greeting').textContent='🗺️ '+currentPlayer+', where shall we go?';
 makeFloatBg(['🌸','⭐','🎵','🌈','💕','🦋','🎀'],14);
 showScreen('title-screen');
 say("Bebefinn's Big Adventure! Tap Lets Go to play!", 700);
+generateAppIcon();
 </script>
 </body>
 </html>
