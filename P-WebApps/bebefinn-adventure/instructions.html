@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bebefinn's Big Adventure — Setup Instructions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Bubblegum Sans', 'Comic Sans MS', cursive;
+            background: linear-gradient(135deg, #ffaadf, #FF79B0, #9B35AF);
+            min-height: 100vh;
+            padding: 24px 16px 40px;
+            color: white;
+        }
+        .container { max-width: 540px; margin: 0 auto; }
+
+        h1 {
+            font-size: clamp(1.8rem, 6vw, 2.6rem);
+            color: #FFD700;
+            text-shadow: 2px 2px 0 #C2006B;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .subtitle { text-align: center; font-size: 1.05rem; opacity: .88; margin-bottom: 24px; }
+
+        .play-btn {
+            display: block;
+            background: linear-gradient(135deg, #FF6EB4, #FF4DA6);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            font-family: inherit;
+            font-size: 1.5rem;
+            padding: 18px 24px;
+            border-radius: 50px;
+            box-shadow: 0 7px 0 #C2006B;
+            margin-bottom: 28px;
+            transition: transform .1s, box-shadow .1s;
+        }
+        .play-btn:active { transform: translateY(3px); box-shadow: 0 4px 0 #C2006B; }
+
+        .card {
+            background: rgba(255,255,255,.18);
+            border: 2px solid rgba(255,255,255,.35);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .card h2 {
+            font-size: 1.15rem;
+            color: #FFD700;
+            margin-bottom: 12px;
+        }
+        .card p, .card li {
+            font-size: .95rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,.92);
+        }
+        ol, ul { padding-left: 20px; }
+        ol li, ul li { margin-bottom: 6px; }
+
+        .note {
+            background: rgba(255,215,0,.18);
+            border: 1px solid rgba(255,215,0,.45);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: .88rem;
+            color: rgba(255,255,255,.88);
+            margin-top: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: .8rem;
+            opacity: .5;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>🎀 Bebefinn's Big Adventure! 🌟</h1>
+    <p class="subtitle">Tap-and-explore game &nbsp;·&nbsp; Ages 2–4 &nbsp;·&nbsp; 🎵 Doo Doo Doo!</p>
+
+    <!-- BIG PLAY BUTTON -->
+    <a class="play-btn" href="https://coreyli2011-collab.github.io/ClaudeWork/P-WebApps/bebefinn-adventure/" target="_blank">
+        🌈 Tap Here to Play! 🌈
+    </a>
+
+    <!-- IPHONE / IPAD SETUP -->
+    <div class="card">
+        <h2>📱 iPhone &amp; iPad Setup (do this once)</h2>
+        <ol>
+            <li>Tap <strong>"Tap Here to Play!"</strong> above — it opens in <strong>Safari</strong></li>
+            <li>Turn the <strong>volume up</strong> on the device — the game talks to your child!<br>
+                <span style="font-size:.85rem; opacity:.75;">(Make sure the phone is not on silent / ring switch is up)</span></li>
+            <li>That's it — no login, no app download, just play! 🎉</li>
+        </ol>
+
+        <div class="note">
+            💡 <strong>Optional — Add to Home Screen</strong> so it opens like an app:<br><br>
+            In Safari, tap the <strong>Share button</strong> (the box with an arrow ↑ at the bottom of the screen)
+            → scroll down → tap <strong>"Add to Home Screen"</strong> → tap <strong>"Add"</strong>.<br>
+            A Bebefinn icon will appear on the Home Screen — just like a real app!
+        </div>
+    </div>
+
+    <!-- ANDROID / PC SETUP -->
+    <div class="card">
+        <h2>💻 Android &amp; PC (do this once)</h2>
+        <ol>
+            <li>Click <strong>"Tap Here to Play!"</strong> above — it opens in your browser</li>
+            <li>Turn the <strong>volume up</strong> before starting</li>
+            <li>Play! 🎮</li>
+        </ol>
+        <div class="note">
+            💡 On Android in Chrome, you can also tap the <strong>three-dot menu → "Add to Home screen"</strong>
+            to get a shortcut icon on your phone's home screen.
+        </div>
+    </div>
+
+    <!-- HOW TO PLAY -->
+    <div class="card">
+        <h2>🎮 How to Play</h2>
+        <ol>
+            <li>Tap <strong>"Let's Go!"</strong> on the title screen</li>
+            <li>The game asks <strong>"Who's playing today?"</strong> — tap the player's bubble<br>
+                <span style="font-size:.85rem; opacity:.75;">Avery is always there by default; see below to add other names</span></li>
+            <li>Pick one of the <strong>6 adventure worlds</strong> — tap a picture to choose:
+                <ul style="padding-left:18px; margin-top:6px;">
+                    <li>🌸 <strong>Garden</strong> — flowers, butterflies, and bees</li>
+                    <li>🏖️ <strong>Beach</strong> — shells, crabs, and Baby Shark!</li>
+                    <li>🌳 <strong>Forest</strong> — bunnies, owls, and foxes</li>
+                    <li>🌈 <strong>Rainbow</strong> — collect all the colors</li>
+                    <li>🐄 <strong>Farm</strong> — cows, pigs, and baby chicks</li>
+                    <li>🚀 <strong>Space</strong> — stars, planets, and aliens</li>
+                </ul>
+            </li>
+            <li>The game <strong>says what to find</strong> out loud — your child just taps the matching pictures!</li>
+            <li>Collect all 3 items → <strong>stars light up</strong> → confetti celebration! 🎊</li>
+        </ol>
+        <p style="margin-top:10px;">Everything is <strong>tap and listen</strong> — no reading needed! 👶</p>
+    </div>
+
+    <!-- ADDING PLAYERS -->
+    <div class="card">
+        <h2>👧 Adding a Guest Player</h2>
+        <ol>
+            <li>From the <strong>"Who's playing?"</strong> screen, tap the <strong>+ Add Friend</strong> circle</li>
+            <li>A text box appears labelled <em>"Grown-ups: type the name here"</em> — type the name and tap <strong>Done ✓</strong></li>
+            <li>The new player appears as a coloured bubble and is remembered next time</li>
+            <li>To remove a guest, tap the small <strong>✕</strong> badge on their bubble</li>
+        </ol>
+        <div class="note">
+            💡 <strong>Avery</strong> is the default player and is always available — she cannot be removed.
+            Guest names are saved on the device, so they come back automatically the next time you open the game.
+        </div>
+    </div>
+
+    <!-- SOUND -->
+    <div class="card">
+        <h2>🔊 Sound &amp; Voice</h2>
+        <p>
+            The game uses your device's built-in voice to narrate everything — world names,
+            what to find, item names when tapped, and a personalised celebration at the end.<br><br>
+            A <strong>🔊 mute button</strong> in the top-right corner lets you silence the narration
+            at any time without stopping the game.
+        </p>
+        <div class="note">
+            💡 For the clearest voice on iPhone/iPad, make sure <strong>Silent Mode is off</strong>
+            (the switch on the side should not show an orange stripe) and <strong>volume is turned up</strong>
+            before opening the game.
+        </div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="card">
+        <h2>💡 Tips for Parents</h2>
+        <p>
+            🔄 Each play randomly picks 3 items from a pool of 9 — so the game feels fresh every time<br><br>
+            🎯 Designed for ages 2–4: giant tap targets, no timers, no fail states — just fun<br><br>
+            📵 Works fully offline once the page has loaded once in the browser<br><br>
+            🌐 No account, no ads, no purchases — completely free
+        </p>
+    </div>
+
+    <p class="footer">Made with ❤️ for little adventurers everywhere</p>
+
+</div>
+</body>
+</html>
