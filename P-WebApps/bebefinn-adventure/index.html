@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Bebefinn Adventure">
+  <title>Bebefinn's Big Adventure!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
+  <style>
+    /* ── RESET ── */
+    * { margin:0; padding:0; box-sizing:border-box;
+        -webkit-tap-highlight-color:transparent;
+        -webkit-touch-callout:none; user-select:none; }
+    html, body {
+      width:100%; height:100%; overflow:hidden;
+      font-family:'Bubblegum Sans','Comic Sans MS',cursive;
+      overscroll-behavior:none;
+      -webkit-overflow-scrolling:touch;
+    }
+    body {
+      background: linear-gradient(180deg,#FFB7D5 0%,#FF79B0 50%,#FF4DA6 100%);
+      padding-top:    env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left:   env(safe-area-inset-left);
+      padding-right:  env(safe-area-inset-right);
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      position:fixed; inset:0; z-index:10;
+      display:none; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:16px;
+      opacity:0; transition:opacity .35s ease;
+    }
+    .screen.active  { display:flex; }
+    .screen.fade-in { opacity:1; }
+
+    /* ── TYPE ── */
+    h1 { font-size:clamp(1.9rem,7vw,3.2rem); color:#9B1FBF;
+         text-shadow:3px 3px 0 #fff, 0 0 25px rgba(155,31,191,.35);
+         text-align:center; line-height:1.1; }
+    h2 { font-size:clamp(1.3rem,5vw,2rem); color:#6A0E88; text-align:center; }
+    p  { font-size:clamp(.95rem,3.5vw,1.25rem); color:#5B1D6B;
+         text-align:center; line-height:1.5; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display:inline-block; padding:15px 32px; border-radius:50px; border:none;
+      cursor:pointer; font-family:inherit; font-size:clamp(1rem,4.5vw,1.5rem);
+      font-weight:bold; transition:transform .1s, box-shadow .1s;
+      touch-action:manipulation;
+    }
+    .btn:active { transform:scale(.93); }
+    .btn-pink {
+      background:linear-gradient(135deg,#FF6EB4,#FF4DA6);
+      color:white; box-shadow:0 5px 0 #C2006B, 0 7px 18px rgba(255,77,166,.4);
+    }
+    .btn-pink:active  { box-shadow:0 2px 0 #C2006B; transform:translateY(3px) scale(.97); }
+    .btn-purple {
+      background:linear-gradient(135deg,#C77DFF,#9B35AF);
+      color:white; box-shadow:0 5px 0 #6B1A7F, 0 7px 18px rgba(155,53,175,.4);
+    }
+    .btn-purple:active { box-shadow:0 2px 0 #6B1A7F; transform:translateY(3px) scale(.97); }
+
+    /* ── BEBEFINN CSS CHARACTER ── */
+    .bebefinn {
+      width:160px; height:215px; position:relative;
+      margin:0 auto;
+      animation:bebebounce 2s ease-in-out infinite;
+    }
+    @keyframes bebebounce {
+      0%,100% { transform:translateY(0); }
+      50%      { transform:translateY(-14px); }
+    }
+    .b-hair-top {
+      position:absolute; left:50%; transform:translateX(-50%);
+      width:108px; height:52px;
+      background:#FFD700; border-radius:55% 55% 0 0; top:-8px; z-index:2;
+    }
+    .b-hair-l {
+      position:absolute; width:24px; height:44px;
+      background:#FFD700; border-radius:55% 0 55% 55%;
+      left:calc(50% - 54px); top:18px; z-index:2;
+    }
+    .b-hair-r {
+      position:absolute; width:24px; height:44px;
+      background:#FFD700; border-radius:0 55% 55% 55%;
+      left:calc(50% + 30px); top:18px; z-index:2;
+    }
+    /* ponytail */
+    .b-ponytail {
+      position:absolute; width:14px; height:38px;
+      background:#FFD700; border-radius:7px;
+      left:calc(50% + 42px); top:4px; z-index:1;
+      transform:rotate(25deg);
+    }
+    .b-head {
+      position:absolute; left:50%; transform:translateX(-50%);
+      width:100px; height:96px;
+      background:#FFDAB9; border-radius:50% 50% 46% 46%;
+      border:3px solid #F0BC98; top:0; z-index:1;
+    }
+    .b-eye-l, .b-eye-r {
+      position:absolute; width:14px; height:17px;
+      background:#3D1A00; border-radius:50%; top:40px;
+    }
+    .b-eye-l { left:18px; }
+    .b-eye-r { right:18px; }
+    .b-eye-l::after, .b-eye-r::after {
+      content:''; width:5px; height:5px;
+      background:white; border-radius:50%;
+      position:absolute; top:2px; left:3px;
+    }
+    .b-lash-l::before { content:''; position:absolute; width:2px; height:8px;
+      background:#3D1A00; border-radius:1px; top:-7px; left:5px; transform:rotate(-10deg); }
+    .b-lash-l::after { content:''; position:absolute; width:2px; height:8px;
+      background:#3D1A00; border-radius:1px; top:-7px; left:9px; transform:rotate(10deg); z-index:5; }
+    .b-cheek-l, .b-cheek-r {
+      position:absolute; width:20px; height:11px;
+      background:rgba(255,130,130,.45); border-radius:50%; top:60px;
+    }
+    .b-cheek-l { left:12px; }
+    .b-cheek-r { right:12px; }
+    .b-mouth {
+      position:absolute; width:26px; height:13px;
+      border:3px solid #C05040; border-top:none;
+      border-radius:0 0 22px 22px;
+      top:68px; left:50%; transform:translateX(-50%);
+    }
+    /* bow on hair */
+    .b-bow {
+      position:absolute; left:calc(50% + 32px); top:-4px; z-index:4;
+      font-size:1.4rem;
+    }
+    /* body */
+    .b-body {
+      position:absolute; left:50%; transform:translateX(-50%);
+      width:88px; height:82px;
+      background:linear-gradient(180deg,#FF79B0,#FF4DA6);
+      border-radius:20px 20px 30px 30px; top:88px;
+    }
+    .b-belly {
+      position:absolute; width:42px; height:36px;
+      background:rgba(255,255,255,.35); border-radius:50%;
+      left:50%; transform:translateX(-50%); top:10px;
+    }
+    .b-skirt {
+      position:absolute; left:50%; transform:translateX(-50%);
+      width:100px; height:32px;
+      background:linear-gradient(180deg,#FF79B0,#FF9ECF);
+      border-radius:0 0 50% 50%; top:140px;
+    }
+    .b-arm-l, .b-arm-r {
+      position:absolute; width:24px; height:58px;
+      background:#FFDAB9; border-radius:12px; top:92px;
+    }
+    .b-arm-l { left:10px; transform:rotate(-22deg); transform-origin:top center; }
+    .b-arm-r { right:10px; transform:rotate(22deg); transform-origin:top center; }
+    .b-hand-l, .b-hand-r {
+      position:absolute; width:18px; height:18px;
+      background:#FFDAB9; border-radius:50%; top:140px;
+    }
+    .b-hand-l { left:6px; }
+    .b-hand-r { right:6px; }
+    .b-leg-l, .b-leg-r {
+      position:absolute; width:28px; height:52px;
+      background:#FFDAB9; border-radius:14px; top:162px;
+    }
+    .b-leg-l { left:22px; }
+    .b-leg-r { right:22px; }
+    .b-shoe-l, .b-shoe-r {
+      position:absolute; width:34px; height:22px;
+      background:#FF4DA6; border-radius:50% 50% 40% 40% / 60% 60% 40% 40%;
+      top:200px;
+    }
+    .b-shoe-l { left:17px; }
+    .b-shoe-r { right:15px; }
+
+    /* ── FLOATING BG ITEMS ── */
+    .float-bg { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+    .float-item {
+      position:absolute; font-size:1.8rem;
+      animation:floatUp linear infinite; bottom:-60px;
+    }
+    @keyframes floatUp {
+      0%   { transform:translateY(0) rotate(0deg); opacity:0; }
+      10%  { opacity:.7; }
+      90%  { opacity:.5; }
+      100% { transform:translateY(-115vh) rotate(25deg); opacity:0; }
+    }
+
+    /* ── TITLE SCREEN ── */
+    #title-screen { background:linear-gradient(180deg,#ffe4f4 0%,#ffc8eb 50%,#ffaadf 100%); }
+    .title-card {
+      background:rgba(255,255,255,.6); backdrop-filter:blur(8px);
+      border-radius:28px; border:3px solid rgba(255,255,255,.8);
+      padding:22px 18px; width:100%; max-width:400px;
+      box-shadow:0 8px 32px rgba(155,53,175,.15);
+    }
+
+    /* ── MAP SCREEN ── */
+    #map-screen { background:linear-gradient(180deg,#b5f0ff 0%,#80dfff 50%,#4dcfff 100%); }
+    .map-card {
+      background:rgba(255,255,255,.6); backdrop-filter:blur(8px);
+      border-radius:28px; border:3px solid rgba(255,255,255,.8);
+      padding:18px; width:100%; max-width:500px;
+    }
+    .adventure-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+      margin-top:14px;
+    }
+    .adv-card {
+      background:rgba(255,255,255,.8); border-radius:20px;
+      border:3px solid rgba(255,255,255,.9);
+      padding:14px 6px; text-align:center; cursor:pointer;
+      box-shadow:0 4px 14px rgba(0,0,0,.1);
+      transition:transform .15s; touch-action:manipulation;
+    }
+    .adv-card:active { transform:scale(.87); }
+    .adv-emoji { font-size:clamp(2rem,7vw,3.2rem); display:block; }
+    .adv-label { font-size:clamp(.72rem,2.8vw,1rem); color:#6A0E88; font-weight:bold; margin-top:5px; }
+
+    /* ── SCENE SCREEN ── */
+    #scene-screen { background:#c8f7c5; overflow-y:auto; justify-content:flex-start; padding-top:12px; }
+    .scene-inner { width:100%; max-width:500px; }
+
+    .star-bar { display:flex; gap:10px; justify-content:center; margin-bottom:10px; }
+    .star-slot {
+      width:46px; height:46px; font-size:2.2rem;
+      display:flex; align-items:center; justify-content:center;
+      opacity:.3; transition:opacity .3s;
+    }
+    .star-slot.earned { opacity:1; animation:starPop .4s ease; }
+    @keyframes starPop {
+      0%   { transform:scale(0) rotate(-30deg); }
+      60%  { transform:scale(1.35) rotate(12deg); }
+      100% { transform:scale(1) rotate(0); }
+    }
+
+    .speech-row {
+      display:flex; align-items:center; justify-content:center;
+      gap:10px; margin-bottom:10px;
+    }
+    .bebe-face { font-size:2.6rem; animation:bebebounce 2s ease-in-out infinite; }
+    .speech-bubble {
+      background:rgba(255,255,255,.9); border-radius:16px;
+      padding:7px 14px; font-size:clamp(.9rem,3.5vw,1.15rem); color:#4A0060;
+      box-shadow:0 2px 8px rgba(0,0,0,.1);
+    }
+
+    .prompt-box {
+      background:rgba(255,255,255,.8); border-radius:18px;
+      padding:10px 16px; margin-bottom:14px; text-align:center;
+    }
+    .prompt-box p { color:#4A0060; font-size:clamp(.95rem,3.8vw,1.3rem); }
+
+    .items-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+    }
+    .item-btn {
+      background:rgba(255,255,255,.85); border-radius:20px;
+      border:3px solid rgba(255,255,255,.9);
+      padding:14px 6px; text-align:center; cursor:pointer;
+      box-shadow:0 4px 14px rgba(0,0,0,.1);
+      transition:transform .15s, opacity .3s; touch-action:manipulation;
+      font-family:inherit; width:100%;
+    }
+    .item-btn:active { transform:scale(.88); }
+    .item-btn.collected {
+      opacity:.45; transform:scale(.82); pointer-events:none;
+      background:rgba(200,255,200,.65);
+    }
+    .item-emoji { font-size:clamp(2.2rem,7vw,3rem); display:block; }
+    .item-name  { font-size:clamp(.7rem,2.8vw,.95rem); color:#4A0060; margin-top:4px; }
+
+    /* ── CELEBRATE SCREEN ── */
+    #celebrate-screen { background:linear-gradient(180deg,#fff3b3,#ffe566); }
+    .celebrate-card {
+      background:rgba(255,255,255,.65); backdrop-filter:blur(8px);
+      border-radius:28px; border:3px solid rgba(255,255,255,.85);
+      padding:24px 20px; width:100%; max-width:400px; text-align:center;
+      position:relative; z-index:1;
+    }
+    .stars-display { font-size:2.8rem; margin:10px 0; letter-spacing:6px; }
+    .confetti-piece {
+      position:fixed; width:12px; height:12px; border-radius:2px;
+      animation:confettiFall linear infinite; pointer-events:none; z-index:200;
+    }
+    @keyframes confettiFall {
+      0%   { transform:translateY(-60px) rotate(0deg); opacity:1; }
+      100% { transform:translateY(110vh) rotate(720deg); opacity:.4; }
+    }
+    .btn-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:18px; }
+  </style>
+</head>
+<body>
+
+<div class="float-bg" id="float-bg"></div>
+
+<!-- ══════════════════════════════════════════════════
+     TITLE SCREEN
+══════════════════════════════════════════════════ -->
+<div class="screen" id="title-screen">
+  <div class="title-card">
+    <h1>Bebefinn's<br>Big Adventure!</h1>
+    <p style="font-size:1.4rem; margin:4px 0; color:#9B1FBF;">🎵 Doo Doo Doo! 🎵</p>
+
+    <!-- Bebefinn character -->
+    <div class="bebefinn" style="margin:10px auto;">
+      <div class="b-bow">🎀</div>
+      <div class="b-hair-top"></div>
+      <div class="b-hair-l"></div>
+      <div class="b-hair-r"></div>
+      <div class="b-ponytail"></div>
+      <div class="b-head">
+        <div class="b-eye-l b-lash-l"></div>
+        <div class="b-eye-r"></div>
+        <div class="b-cheek-l"></div>
+        <div class="b-cheek-r"></div>
+        <div class="b-mouth"></div>
+      </div>
+      <div class="b-arm-l"></div>
+      <div class="b-arm-r"></div>
+      <div class="b-hand-l"></div>
+      <div class="b-hand-r"></div>
+      <div class="b-body"><div class="b-belly"></div></div>
+      <div class="b-skirt"></div>
+      <div class="b-leg-l"></div>
+      <div class="b-leg-r"></div>
+      <div class="b-shoe-l"></div>
+      <div class="b-shoe-r"></div>
+    </div>
+
+    <p style="margin:6px 0 18px;">Help Bebefinn explore!<br>Pick an adventure! 🌈</p>
+    <button class="btn btn-pink" onclick="showScreen('map-screen')" style="width:100%; font-size:clamp(1.1rem,5vw,1.6rem);">
+      🌟 Let's Go! 🌟
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     MAP SCREEN
+══════════════════════════════════════════════════ -->
+<div class="screen" id="map-screen">
+  <div class="map-card">
+    <h2>🗺️ Where shall we go?</h2>
+    <p style="color:#1A5080; margin-top:4px;">Tap to choose your adventure!</p>
+    <div class="adventure-grid">
+      <div class="adv-card" onclick="startAdventure('garden')">
+        <span class="adv-emoji">🌸</span>
+        <div class="adv-label">Garden</div>
+      </div>
+      <div class="adv-card" onclick="startAdventure('beach')">
+        <span class="adv-emoji">🏖️</span>
+        <div class="adv-label">Beach</div>
+      </div>
+      <div class="adv-card" onclick="startAdventure('forest')">
+        <span class="adv-emoji">🌳</span>
+        <div class="adv-label">Forest</div>
+      </div>
+      <div class="adv-card" onclick="startAdventure('rainbow')">
+        <span class="adv-emoji">🌈</span>
+        <div class="adv-label">Rainbow</div>
+      </div>
+      <div class="adv-card" onclick="startAdventure('farm')">
+        <span class="adv-emoji">🐄</span>
+        <div class="adv-label">Farm</div>
+      </div>
+      <div class="adv-card" onclick="startAdventure('space')">
+        <span class="adv-emoji">🚀</span>
+        <div class="adv-label">Space</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SCENE SCREEN
+══════════════════════════════════════════════════ -->
+<div class="screen" id="scene-screen">
+  <div class="scene-inner">
+    <!-- Stars progress -->
+    <div class="star-bar" id="star-bar"></div>
+
+    <!-- Bebefinn + speech -->
+    <div class="speech-row">
+      <div class="bebe-face">👶</div>
+      <div class="speech-bubble" id="speech-bubble">Let's go!</div>
+    </div>
+
+    <!-- Prompt -->
+    <div class="prompt-box">
+      <p id="prompt-text">Tap everything you find!</p>
+    </div>
+
+    <!-- Items -->
+    <div class="items-grid" id="items-grid"></div>
+
+    <!-- Back button -->
+    <div style="text-align:center; margin-top:16px;">
+      <button class="btn btn-purple" onclick="showScreen('map-screen')"
+              style="font-size:1rem; padding:10px 26px;">
+        ← Choose Again
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     CELEBRATE SCREEN
+══════════════════════════════════════════════════ -->
+<div class="screen" id="celebrate-screen">
+  <div class="celebrate-card">
+    <div style="font-size:4rem; animation:bebebounce 1s ease-in-out infinite; display:inline-block;">🎉</div>
+    <h1 style="margin:6px 0;">Amazing Job!</h1>
+    <p style="font-size:1.2rem; color:#4A0060;">Bebefinn loves you! 💕</p>
+    <div class="stars-display" id="final-stars"></div>
+    <p id="complete-msg" style="color:#6B3080; font-size:1.05rem;"></p>
+    <div class="btn-row">
+      <button class="btn btn-pink" onclick="replayAdventure()">Play Again! 🔄</button>
+      <button class="btn btn-purple" onclick="showScreen('map-screen')">New World! 🗺️</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════ -->
+<script>
+// ─── ADVENTURE DATA ───────────────────────────────────
+const WORLDS = {
+  garden: {
+    label: 'Garden',
+    bg: 'linear-gradient(180deg,#c8f7c5 0%,#90e09a 60%,#5cb875 100%)',
+    floatItems: ['🌸','🌻','🦋','🐝','🍃'],
+    prompt: 'Find all the garden friends! 🌸',
+    items: [
+      { emoji:'🌻', name:'Sunflower',   speech:'So sunny! ☀️' },
+      { emoji:'🌷', name:'Tulip',       speech:'So pretty! 💕' },
+      { emoji:'🦋', name:'Butterfly',   speech:'Fly away! 🎉' },
+      { emoji:'🐛', name:'Caterpillar', speech:'Hello bug! 🐛' },
+      { emoji:'🍀', name:'Lucky Clover',speech:'So lucky! 🍀' },
+      { emoji:'🐝', name:'Bumble Bee',  speech:'Buzz buzz! 🌼' },
+      { emoji:'🌼', name:'Daisy',       speech:'So cute! 🌼' },
+      { emoji:'🐞', name:'Ladybird',    speech:'Spot spot! 🔴' },
+      { emoji:'🌿', name:'Leaf',        speech:'Nice and green!' },
+    ]
+  },
+  beach: {
+    label: 'Beach',
+    bg: 'linear-gradient(180deg,#87CEEB 0%,#5DB8E8 40%,#FFD58A 70%,#F5C342 100%)',
+    floatItems: ['🐚','🌊','🦀','⭐','☀️'],
+    prompt: 'Bebefinn loves the beach! Find them! 🏖️',
+    items: [
+      { emoji:'🐚', name:'Shell',      speech:'So pretty! 🐚' },
+      { emoji:'🦀', name:'Crab',       speech:'Pinch pinch! 🦀' },
+      { emoji:'🐠', name:'Fish',       speech:'Blub blub! 🐠' },
+      { emoji:'⭐', name:'Starfish',   speech:'A star! ⭐' },
+      { emoji:'🌊', name:'Wave',       speech:'Wheee! 🌊' },
+      { emoji:'🦈', name:'Baby Shark', speech:'Doo doo doo! 🎵' },
+      { emoji:'🏄', name:'Surfboard',  speech:'Hang ten! 🤙' },
+      { emoji:'🪸', name:'Coral',      speech:'Beautiful! 🌈' },
+      { emoji:'🐙', name:'Octopus',    speech:'Eight arms! 🐙' },
+    ]
+  },
+  forest: {
+    label: 'Forest',
+    bg: 'linear-gradient(180deg,#b5f0c0 0%,#6dbf77 50%,#3d8c4b 100%)',
+    floatItems: ['🍄','🌰','🍃','🦔','🐿️'],
+    prompt: 'Explore the magical forest! 🌳',
+    items: [
+      { emoji:'🐿️', name:'Squirrel',  speech:'Nutty! 🌰' },
+      { emoji:'🦔', name:'Hedgehog',  speech:'Spiky! 🦔' },
+      { emoji:'🍄', name:'Mushroom',  speech:'So round! 🍄' },
+      { emoji:'🐰', name:'Bunny',     speech:'Hop hop! 🐰' },
+      { emoji:'🦉', name:'Owl',       speech:'Hoo hoo! 🦉' },
+      { emoji:'🌰', name:'Acorn',     speech:'Found it! 🎉' },
+      { emoji:'🦊', name:'Fox',       speech:'Hello fox! 🦊' },
+      { emoji:'🐻', name:'Bear Cub',  speech:'Roar! 🐻' },
+      { emoji:'🍃', name:'Big Leaf',  speech:'Rustle rustle!' },
+    ]
+  },
+  rainbow: {
+    label: 'Rainbow',
+    bg: 'linear-gradient(180deg,#c8aaff 0%,#ffb3de 50%,#ffe0b3 100%)',
+    floatItems: ['🌈','⭐','💫','✨','💕'],
+    prompt: 'Collect all the rainbow colors! 🌈',
+    items: [
+      { emoji:'❤️', name:'Red',    speech:'Red! Red! ❤️' },
+      { emoji:'🧡', name:'Orange', speech:'Orange! 🧡' },
+      { emoji:'💛', name:'Yellow', speech:'Yellow! 💛' },
+      { emoji:'💚', name:'Green',  speech:'Green! 💚' },
+      { emoji:'💙', name:'Blue',   speech:'Blue! 💙' },
+      { emoji:'💜', name:'Purple', speech:'Purple! 💜' },
+      { emoji:'🌈', name:'Rainbow',speech:'All colors! 🌈' },
+      { emoji:'⭐', name:'Star',   speech:'Twinkle! ⭐' },
+      { emoji:'☁️', name:'Cloud',  speech:'Soft cloud! ☁️' },
+    ]
+  },
+  farm: {
+    label: 'Farm',
+    bg: 'linear-gradient(180deg,#87CEEB 0%,#c8f7c5 50%,#a0d870 100%)',
+    floatItems: ['🐮','🐔','🐑','🌻','🥕'],
+    prompt: 'Meet all the farm animals! 🐄',
+    items: [
+      { emoji:'🐮', name:'Cow',     speech:'Moo moo! 🐮' },
+      { emoji:'🐷', name:'Pig',     speech:'Oink oink! 🐷' },
+      { emoji:'🐔', name:'Chicken', speech:'Cluck cluck! 🐔' },
+      { emoji:'🐑', name:'Sheep',   speech:'Baa baa! 🐑' },
+      { emoji:'🐴', name:'Horse',   speech:'Neigh! 🐴' },
+      { emoji:'🐥', name:'Baby Chick',speech:'Cheep cheep! 🐥' },
+      { emoji:'🐇', name:'Rabbit',  speech:'Hop hop! 🐇' },
+      { emoji:'🦆', name:'Duck',    speech:'Quack quack! 🦆' },
+      { emoji:'🐐', name:'Goat',    speech:'Meh meh! 🐐' },
+    ]
+  },
+  space: {
+    label: 'Space',
+    bg: 'linear-gradient(180deg,#0d0d2b 0%,#1a1a4e 50%,#2d2d7e 100%)',
+    floatItems: ['⭐','🌙','💫','✨','🪐'],
+    prompt: 'Fly through space with Bebefinn! 🚀',
+    items: [
+      { emoji:'⭐', name:'Star',    speech:'I\'m a star! ⭐' },
+      { emoji:'🌙', name:'Moon',    speech:'Goodnight! 🌙' },
+      { emoji:'🪐', name:'Planet',  speech:'Zoom zoom! 🪐' },
+      { emoji:'☄️', name:'Comet',   speech:'Whoosh! ☄️' },
+      { emoji:'👽', name:'Alien',   speech:'Hello friend! 👽' },
+      { emoji:'🌟', name:'Big Star',speech:'Twinkle! 🌟' },
+      { emoji:'🛸', name:'UFO',     speech:'Beep boop! 🛸' },
+      { emoji:'🌍', name:'Earth',   speech:'Our home! 🌍' },
+      { emoji:'🚀', name:'Rocket',  speech:'3-2-1 blast off!' },
+    ]
+  }
+};
+
+// ─── STATE ────────────────────────────────────────────
+let currentWorld = 'garden';
+let itemsFound   = 0;
+let totalItems   = 3;
+
+// ─── AUDIO ────────────────────────────────────────────
+let audioCtx;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, dur, type='sine', vol=0.28) {
+  const ac = getAudio();
+  const osc = ac.createOscillator();
+  const g   = ac.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, ac.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(freq * 1.4, ac.currentTime + dur * .6);
+  g.gain.setValueAtTime(vol, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(); osc.stop(ac.currentTime + dur);
+}
+function playCollect() {
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, .14, 'triangle', .3), i * 90));
+}
+function playStar() {
+  [440, 554, 659, 880].forEach((f, i) => setTimeout(() => tone(f, .12, 'sine', .32), i * 70));
+}
+function playCelebrate() {
+  const m = [523,587,659,698,784,880,988,1047];
+  m.forEach((f, i) => setTimeout(() => tone(f, .18, 'triangle', .28), i * 110));
+}
+
+// ─── SCREEN TRANSITION ────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen.active').forEach(s => {
+    s.classList.remove('fade-in');
+    setTimeout(() => s.classList.remove('active'), 360);
+  });
+  const next = document.getElementById(id);
+  next.classList.add('active');
+  requestAnimationFrame(() => requestAnimationFrame(() => next.classList.add('fade-in')));
+}
+
+// ─── FLOATING BACKGROUND ──────────────────────────────
+function makeFloatBg(emojis, count = 12) {
+  const bg = document.getElementById('float-bg');
+  bg.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'float-item';
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left             = Math.random() * 100 + '%';
+    el.style.animationDuration  = (4 + Math.random() * 7) + 's';
+    el.style.animationDelay     = (Math.random() * 7) + 's';
+    el.style.fontSize           = (1.1 + Math.random() * 1.3) + 'rem';
+    bg.appendChild(el);
+  }
+}
+
+// ─── START ADVENTURE ──────────────────────────────────
+function startAdventure(worldKey) {
+  currentWorld = worldKey;
+  const world  = WORLDS[worldKey];
+  itemsFound   = 0;
+
+  // Pick 3 random items from the pool
+  const picked = [...world.items].sort(() => Math.random() - .5).slice(0, 3);
+  totalItems   = picked.length;
+
+  // Background colour for scene
+  document.getElementById('scene-screen').style.background = world.bg;
+
+  // Star slots
+  const bar = document.getElementById('star-bar');
+  bar.innerHTML = '';
+  for (let i = 0; i < totalItems; i++) {
+    const s = document.createElement('div');
+    s.className = 'star-slot';
+    s.id = 'star-' + i;
+    s.textContent = '⭐';
+    bar.appendChild(s);
+  }
+
+  // Prompt & speech
+  document.getElementById('prompt-text').textContent   = world.prompt;
+  document.getElementById('speech-bubble').textContent = "Let's go! 🎉";
+
+  // Build item buttons
+  const grid = document.getElementById('items-grid');
+  grid.innerHTML = '';
+  picked.forEach((item, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'item-btn';
+    btn.innerHTML = `<span class="item-emoji">${item.emoji}</span><span class="item-name">${item.name}</span>`;
+    btn.addEventListener('click', () => collectItem(btn, item, idx));
+    grid.appendChild(btn);
+  });
+
+  // Floating bg
+  makeFloatBg(world.floatItems);
+
+  showScreen('scene-screen');
+}
+
+function replayAdventure() {
+  startAdventure(currentWorld);
+}
+
+// ─── COLLECT ITEM ─────────────────────────────────────
+function collectItem(btn, item, idx) {
+  if (btn.classList.contains('collected')) return;
+  btn.classList.add('collected');
+
+  // Speech bubble update
+  document.getElementById('speech-bubble').textContent = item.speech;
+
+  // Earn a star
+  const slot = document.getElementById('star-' + itemsFound);
+  if (slot) { slot.classList.add('earned'); playStar(); }
+
+  // Button bounce animation
+  btn.style.transition = 'transform .25s';
+  btn.style.transform  = 'scale(1.28) rotate(8deg)';
+  setTimeout(() => { btn.style.transform = 'scale(.82)'; }, 280);
+
+  playCollect();
+  itemsFound++;
+
+  if (itemsFound >= totalItems) {
+    setTimeout(celebrate, 750);
+  }
+}
+
+// ─── CELEBRATE ────────────────────────────────────────
+function celebrate() {
+  playCelebrate();
+
+  document.getElementById('final-stars').textContent = '⭐'.repeat(itemsFound);
+  document.getElementById('complete-msg').textContent =
+    `You finished the ${WORLDS[currentWorld].label} adventure! 🎊`;
+
+  // Confetti rain
+  document.querySelectorAll('.confetti-piece').forEach(e => e.remove());
+  const cols = ['#FF6EB4','#FFD700','#9B35AF','#4DD0FF','#FF6B6B','#6BCF7F','#FFB347'];
+  for (let i = 0; i < 35; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.background       = cols[Math.floor(Math.random() * cols.length)];
+    c.style.left             = Math.random() * 100 + 'vw';
+    c.style.animationDuration  = (2.2 + Math.random() * 3) + 's';
+    c.style.animationDelay     = (Math.random() * 2) + 's';
+    c.style.borderRadius       = Math.random() > .5 ? '50%' : '3px';
+    document.body.appendChild(c);
+  }
+
+  makeFloatBg(['🎉','⭐','🌟','✨','🎊','💫','💕'], 18);
+  showScreen('celebrate-screen');
+}
+
+// ─── INIT ─────────────────────────────────────────────
+makeFloatBg(['🌸','⭐','🎵','🌈','💕','🦋','🎀'], 14);
+showScreen('title-screen');
+</script>
+</body>
+</html>
